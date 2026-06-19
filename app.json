@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "EduBand",
+    "slug": "eduband",
+    "version": "0.1.0",
+    "scheme": "eduband",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0E1A2B"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "EduBand records your voice only when you tap record, to analyse and help improve your spoken communication."
+      }
+    },
+    "android": {
+      "package": "com.eduband.app",
+      "permissions": ["RECORD_AUDIO"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0E1A2B"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "EduBand records your voice only when you tap record, to analyse and help improve your spoken communication."
+        }
+      ]
+    ]
+  }
+}
