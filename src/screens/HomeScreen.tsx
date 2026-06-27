@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -45,11 +45,16 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.hello}>Hi {profile?.name?.split(' ')[0] ?? 'there'}</Text>
               <Text style={styles.sub}>Let's grow your voice today.</Text>
             </View>
-            <View style={styles.avatar}>
+            <Pressable
+              onPress={() => navigation.navigate('Profile')}
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+              style={({ pressed }) => [styles.avatar, pressed && { opacity: 0.85 }]}
+            >
               <Text style={styles.avatarText}>
                 {(profile?.name?.[0] ?? 'E').toUpperCase()}
               </Text>
-            </View>
+            </Pressable>
           </View>
 
           {latest ? (

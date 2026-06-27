@@ -46,6 +46,7 @@ import TeacherReportScreen from '@/screens/teacher/TeacherReportScreen';
 import ParentPortalScreen from '@/screens/ParentPortalScreen';
 import ProfessionalHomeScreen from '@/screens/ProfessionalHomeScreen';
 import ApiKeysScreen from '@/screens/ApiKeysScreen';
+import ProfileScreen from '@/screens/ProfileScreen';
 import AuthScreen from '@/screens/AuthScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -182,6 +183,7 @@ export default function App() {
           <Stack.Screen name="ProfessionalHome" component={ProfessionalHomeScreen} options={{ headerShown: false }} />
 
           {/* Shared */}
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
           <Stack.Screen name="ApiKeys" component={ApiKeysScreen} options={{ title: 'API Keys' }} />
         </Stack.Navigator>
       </NavigationContainer>

@@ -45,5 +45,6 @@ export type RootStackParamList = {
   ProfessionalHome: undefined;
 
   // Shared
+  Profile: undefined;
   ApiKeys: undefined;
 };
