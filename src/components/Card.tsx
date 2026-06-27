@@ -5,18 +5,18 @@ import { colors, radius, shadow, spacing } from '@/theme';
 interface Props {
   children: React.ReactNode;
   style?: ViewStyle;
-  // 'glass' (default) = frosted card on the obsidian bg; 'solid' = opaque surface
+  // 'glass' (default) = elevated white card; 'solid' = flat off-white surface.
   variant?: 'glass' | 'solid';
 }
 
-// Glassmorphic card: translucent white over the dark mesh, thin light border.
+// Airbnb-style card: clean white, hairline border, soft low-contrast shadow.
 export default function Card({ children, style, variant = 'glass' }: Props) {
   return (
     <View
       style={[
         styles.base,
-        variant === 'glass' ? styles.glass : styles.solid,
-        shadow.card,
+        variant === 'glass' ? styles.elevated : styles.solid,
+        variant === 'glass' && shadow.card,
         style,
       ]}
     >
@@ -32,12 +32,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
   },
-  glass: {
-    backgroundColor: colors.glass,
-    borderColor: colors.glassBorder,
+  elevated: {
+    backgroundColor: colors.surface,
+    borderColor: colors.line,
   },
   solid: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceAlt,
     borderColor: colors.line,
   },
 });

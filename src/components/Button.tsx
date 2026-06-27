@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, font, radius, shadow, spacing } from '@/theme';
+import { colors, font, fontFamily, radius, shadow, spacing, weight } from '@/theme';
 
 interface Props {
   title: string;
@@ -99,7 +99,7 @@ export default function Button({
 const styles = StyleSheet.create({
   shadowWrap: { borderRadius: radius.md },
   base: {
-    minHeight: 56,
+    minHeight: 48,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -109,15 +109,21 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center' },
   icon: { fontSize: font.body, marginRight: spacing.sm },
+  // Airbnb's bordered secondary: white fill, near-black hairline border.
   secondary: {
-    backgroundColor: colors.glass,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: colors.text,
   },
-  ghost: { backgroundColor: 'transparent', minHeight: 48 },
-  disabled: { opacity: 0.45 },
-  pressed: { opacity: 0.9, transform: [{ scale: 0.985 }] },
-  text: { fontSize: font.body, fontWeight: '700', letterSpacing: 0.2 },
+  ghost: { backgroundColor: 'transparent', minHeight: 44 },
+  disabled: { opacity: 0.4 },
+  pressed: { opacity: 0.92, transform: [{ scale: 0.985 }] },
+  text: {
+    fontFamily,
+    fontSize: font.body,
+    fontWeight: weight.semibold,
+    letterSpacing: 0.1,
+  },
   textPrimary: { color: colors.white },
   textSecondary: { color: colors.text },
   textGhost: { color: colors.primary },

@@ -1,7 +1,7 @@
 // Shared helpers for EduBand Edge Functions (Deno runtime).
 // High-standards defaults: auth required, CORS locked, inputs validated.
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 
 // Allow only your app origins. For Expo Go / native there is no Origin header,
 // which we permit; browsers must match the allowlist.
