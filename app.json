@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0E1A2B"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -21,7 +23,11 @@
     },
     "android": {
       "package": "com.eduband.app",
-      "permissions": ["RECORD_AUDIO"],
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0E1A2B"
@@ -37,6 +43,12 @@
           "microphonePermission": "EduBand records your voice only when you tap record, to analyse and help improve your spoken communication."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "43b5a9b2-e149-4e1b-9145-ed6faa70dd0f"
+      }
+    },
+    "owner": "jash_001"
   }
 }
