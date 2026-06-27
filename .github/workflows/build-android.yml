@@ -1,0 +1,36 @@
+name: Build Android APK
+
+# Push to main → cloud build on EAS → downloadable APK in your Expo dashboard.
+# Also runnable on-demand from the Actions tab (workflow_dispatch).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Trigger EAS build (Android APK, preview profile)
+        run: eas build --platform android --profile preview --non-interactive --no-wait
+
+      - name: Where to download
+        run: echo "Build queued. Download the APK from https://expo.dev/accounts/<your-account>/projects/eduband/builds"
