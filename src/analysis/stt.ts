@@ -8,6 +8,7 @@
 import { Transcript, WordTiming } from '@/types';
 import { config, modeFlags } from '@/config';
 import { getAccessToken } from '@/services/supabase';
+import { logEvent, logInfo, logWarn } from '@/services/logger';
 
 // ---------------------------------------------------------------------------
 // MOCK (offline fallback)
@@ -157,16 +158,26 @@ export async function transcribe(
 ): Promise<Transcript> {
   try {
     if (audioUri && modeFlags.useBackend) {
-      return await backendTranscribe(audioUri, durationSec);
+      logInfo('Transcribing via backend', config.apiBase);
+      const t = await backendTranscribe(audioUri, durationSec);
+      logEvent('Transcript received (backend)', { words: t.words.length });
+      return t;
     }
     if (audioUri && modeFlags.useDirectStt) {
-      return config.sttProvider === 'assemblyai'
-        ? await assemblyTranscribe(audioUri)
-        : await deepgramTranscribe(audioUri);
+      logInfo(`Transcribing via ${config.sttProvider}`);
+      const t =
+        config.sttProvider === 'assemblyai'
+          ? await assemblyTranscribe(audioUri)
+          : await deepgramTranscribe(audioUri);
+      logEvent(`Transcript received (${config.sttProvider})`, { words: t.words.length });
+      return t;
     }
+    logInfo('No STT configured — using mock transcript');
   } catch (e) {
     // Fall back to mock so a transient API/network issue never blocks the user.
-    console.warn('STT failed, using mock transcript:', e);
+    logWarn('STT failed, using mock transcript', e);
   }
-  return mockTranscribe(durationSec);
+  const t = await mockTranscribe(durationSec);
+  logEvent('Transcript ready (mock)', { words: t.words.length });
+  return t;
 }

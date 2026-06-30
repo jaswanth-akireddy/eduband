@@ -14,12 +14,14 @@ import {
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Button from '@/components/Button';
+import { logError, logEvent } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TeacherRecord'>;
 
 export default function TeacherRecordScreen({ navigation }: Props) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [starting, setStarting] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -30,21 +32,39 @@ export default function TeacherRecordScreen({ navigation }: Props) {
   }, []);
 
   async function onStart() {
-    const granted = await requestMicPermission();
-    if (!granted) {
-      Alert.alert('Microphone needed', 'Please allow microphone access to record.');
-      return;
+    // Wrapped in try/catch so a thrown error can never silently no-op the
+    // button — any failure surfaces its real message instead of vanishing.
+    logEvent('Teacher record button tapped');
+    setStarting(true);
+    try {
+      const granted = await requestMicPermission();
+      if (!granted) {
+        Alert.alert('Microphone needed', 'Please allow microphone access to record.');
+        return;
+      }
+      await startRecording();
+      setRecording(true);
+      setElapsed(0);
+      timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
+    } catch (e) {
+      logError('Could not start teacher recording', e);
+      Alert.alert(
+        'Could not start recording',
+        e instanceof Error ? e.message : 'Unexpected error. Please try again.'
+      );
+    } finally {
+      setStarting(false);
     }
-    await startRecording();
-    setRecording(true);
-    setElapsed(0);
-    timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
   }
 
   async function onStop() {
     if (timer.current) clearInterval(timer.current);
     setRecording(false);
-    await stopRecording();
+    try {
+      await stopRecording();
+    } catch {
+      // ignore — still route to the report below
+    }
     // Demo: route to the most recent teaching report.
     navigation.replace('TeacherReport', { sessionId: DEMO_TEACHING_SESSIONS[0].id });
   }
@@ -66,7 +86,12 @@ export default function TeacherRecordScreen({ navigation }: Props) {
             <Text style={styles.timer}>{formatTime(elapsed)}</Text>
             <Pressable
               onPress={recording ? onStop : onStart}
-              style={[styles.recBtn, recording && styles.recBtnActive]}
+              disabled={starting}
+              style={({ pressed }) => [
+                styles.recBtn,
+                recording && styles.recBtnActive,
+                (pressed || starting) && { opacity: 0.7 },
+              ]}
             >
               <View style={recording ? styles.stopIcon : styles.micDot} />
             </Pressable>

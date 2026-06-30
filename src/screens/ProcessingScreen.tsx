@@ -10,6 +10,7 @@ import { taskById } from '@/data/tasks';
 import { addSession, getProfile, getSettings } from '@/storage/store';
 import { Session } from '@/types';
 import { describeMode } from '@/config';
+import { logError, logEvent, logInfo } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Processing'>;
 
@@ -36,10 +37,13 @@ export default function ProcessingScreen({ route, navigation }: Props) {
         const settings = await getSettings();
         const level = profile?.level ?? 'high';
         const { taskId, mode, audioUri, durationSec } = route.params;
+        logEvent('Analysis started', { engine: describeMode(), durationSec });
 
         // Pipeline: STT -> metrics -> LLM scoring -> store
         const transcript = await transcribe(audioUri, durationSec);
+        logInfo('Scoring transcript…');
         const { metrics, analysis } = await analyze(transcript, durationSec, level);
+        logEvent('Scoring complete', { ci: analysis.ci });
 
         const task = taskById(taskId);
         const session: Session = {
@@ -56,11 +60,13 @@ export default function ProcessingScreen({ route, navigation }: Props) {
           analysis,
         };
         await addSession(session);
+        logEvent('Session saved', { id: session.id });
 
         if (!cancelled) {
           navigation.replace('Report', { sessionId: session.id });
         }
       } catch (e) {
+        logError('Analysis failed', e);
         if (!cancelled) {
           // Don't fail silently — tell the user what went wrong before bouncing
           // back, so a pipeline error is visible instead of a mystery.

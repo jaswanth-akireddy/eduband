@@ -24,6 +24,7 @@ import ScoreRing from '@/components/ScoreRing';
 import PillarRadar from '@/components/PillarRadar';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
+import { logError, logEvent, logInfo } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Report'>;
 
@@ -65,26 +66,32 @@ export default function ReportScreen({ route, navigation }: Props) {
   async function onExportTranscript() {
     if (!session) return;
     const body = buildTranscriptText(session);
+    logInfo('Exporting transcript…');
     try {
       const fileName = `eduband-transcript-${session.id}.txt`;
       const uri = FileSystem.cacheDirectory + fileName;
       await FileSystem.writeAsStringAsync(uri, body, {
         encoding: FileSystem.EncodingType.UTF8,
       });
+      logEvent('Transcript .txt file created', { fileName, bytes: body.length });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'text/plain',
           dialogTitle: 'Save your transcript',
           UTI: 'public.plain-text',
         });
+        logEvent('Transcript shared');
       } else {
         await Share.share({ message: body });
+        logEvent('Transcript shared (text fallback)');
       }
     } catch (e) {
       // Fall back to a plain text share if writing the file fails.
+      logError('Transcript file export failed, trying text share', e);
       try {
         await Share.share({ message: body });
-      } catch {
+      } catch (e2) {
+        logError('Transcript export failed', e2);
         Alert.alert('Could not export', 'Unable to export the transcript right now.');
       }
     }

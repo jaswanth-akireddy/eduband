@@ -14,6 +14,7 @@ import {
   stopRecording,
 } from '@/services/recorder';
 import Button from '@/components/Button';
+import { logError, logEvent, logInfo, logWarn } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
@@ -34,16 +35,19 @@ export default function RecordScreen({ route, navigation }: Props) {
   async function onStart() {
     // Everything is inside try/catch so a failure can never silently no-op the
     // button. Any thrown error surfaces its real message instead of vanishing.
+    logEvent('Record button tapped');
     setStarting(true);
     try {
       const consent = await hasValidConsent();
       if (!consent) {
+        logWarn('Recording blocked: no valid consent');
         Alert.alert(
           'Consent required',
           'Recording is blocked until parental/guardian consent is granted.'
         );
         return;
       }
+      logInfo('Consent OK');
 
       const granted = await requestMicPermission();
       if (!granted) {
@@ -59,6 +63,7 @@ export default function RecordScreen({ route, navigation }: Props) {
       setElapsed(0);
       timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
     } catch (e) {
+      logError('Could not start recording', e);
       Alert.alert(
         'Could not start recording',
         e instanceof Error ? e.message : 'Unexpected error. Please try again.'
@@ -74,12 +79,14 @@ export default function RecordScreen({ route, navigation }: Props) {
     const result = await stopRecording();
     const durationSec = result.durationSec || elapsed;
     if (durationSec < 5) {
+      logWarn('Recording too short, discarded', { durationSec: Math.round(durationSec) });
       Alert.alert(
         'A little longer',
         'Try to speak for at least a few seconds so we can give useful feedback.'
       );
       return;
     }
+    logEvent('Sending to analysis', { durationSec: Math.round(durationSec), hasAudio: !!result.uri });
     navigation.replace('Processing', {
       taskId: route.params.taskId,
       mode: task ? 'guided' : 'free',
@@ -113,7 +120,11 @@ export default function RecordScreen({ route, navigation }: Props) {
           <Pressable
             onPress={recording ? onStop : onStart}
             disabled={starting}
-            style={[styles.recBtn, recording && styles.recBtnActive]}
+            style={({ pressed }) => [
+              styles.recBtn,
+              recording && styles.recBtnActive,
+              (pressed || starting) && { opacity: 0.7 },
+            ]}
           >
             <View style={recording ? styles.stopIcon : styles.micDot} />
           </Pressable>
