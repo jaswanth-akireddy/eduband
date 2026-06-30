@@ -45,18 +45,32 @@ export async function saveProfile(p: StudentProfile): Promise<void> {
 }
 
 // ---- Consent (Section 8: block recording without it) -----------------------
+// In-memory mirror of the consent decision. Primed at app boot and on every
+// read/write, so the record gate can answer instantly without a fresh
+// AsyncStorage round-trip (which can stall if the shared store is contended by
+// Supabase's background token refresh). null = not yet known this session.
+let consentCache: boolean | null = null;
+
 export async function getConsent(): Promise<ConsentRecord | null> {
   const raw = await AsyncStorage.getItem(KEYS.consent);
   return raw ? (JSON.parse(raw) as ConsentRecord) : null;
 }
 
 export async function saveConsent(c: ConsentRecord): Promise<void> {
+  consentCache = !!c && c.granted;
   await AsyncStorage.setItem(KEYS.consent, JSON.stringify(c));
 }
 
 export async function hasValidConsent(): Promise<boolean> {
   const c = await getConsent();
-  return !!c && c.granted;
+  consentCache = !!c && c.granted;
+  return consentCache;
+}
+
+// Synchronous, non-blocking read of the cached consent decision. Returns null
+// if consent hasn't been resolved yet this session.
+export function getConsentCache(): boolean | null {
+  return consentCache;
 }
 
 // ---- Settings --------------------------------------------------------------

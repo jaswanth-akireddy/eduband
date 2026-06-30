@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
 import { colors, font, radius, spacing } from '@/theme';
 import { taskById } from '@/data/tasks';
-import { hasValidConsent } from '@/storage/store';
+import { getConsentCache, hasValidConsent } from '@/storage/store';
 import {
   cancelRecording,
   requestMicPermission,
@@ -45,7 +45,14 @@ export default function RecordScreen({ route, navigation }: Props) {
     setStarting(true);
     try {
       logEvent('Checking consent…');
-      const consent = await withTimeout('consent check', hasValidConsent(), 5000);
+      // Use the cached decision from app boot when available so a contended
+      // AsyncStorage can't stall the record gate; only read storage if unknown.
+      const cached = getConsentCache();
+      const consent =
+        cached !== null
+          ? cached
+          : await withTimeout('consent check', hasValidConsent(), 5000);
+      if (cached !== null) logInfo('Consent from cache', cached);
       if (!consent) {
         logWarn('Recording blocked: no valid consent');
         Alert.alert(
