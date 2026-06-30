@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
 import { colors, font, radius, spacing } from '@/theme';
 import { taskById } from '@/data/tasks';
-import { hasValidConsent } from '@/storage/store';
+import { getConsentCache, hasValidConsent } from '@/storage/store';
 import {
   cancelRecording,
   requestMicPermission,
@@ -14,7 +14,7 @@ import {
   stopRecording,
 } from '@/services/recorder';
 import Button from '@/components/Button';
-import { logError, logEvent, logInfo, logWarn } from '@/services/logger';
+import { logError, logEvent, logInfo, logWarn, withTimeout } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
@@ -32,13 +32,27 @@ export default function RecordScreen({ route, navigation }: Props) {
     };
   }, []);
 
+  // Confirms React actually re-renders when the recording flag flips. If
+  // startRecording logs but this never fires, the hang is in rendering, not audio.
+  useEffect(() => {
+    logInfo(`UI render: recording = ${recording}`);
+  }, [recording]);
+
   async function onStart() {
     // Everything is inside try/catch so a failure can never silently no-op the
     // button. Any thrown error surfaces its real message instead of vanishing.
     logEvent('Record button tapped');
     setStarting(true);
     try {
-      const consent = await hasValidConsent();
+      logEvent('Checking consent…');
+      // Use the cached decision from app boot when available so a contended
+      // AsyncStorage can't stall the record gate; only read storage if unknown.
+      const cached = getConsentCache();
+      const consent =
+        cached !== null
+          ? cached
+          : await withTimeout('consent check', hasValidConsent(), 5000);
+      if (cached !== null) logInfo('Consent from cache', cached);
       if (!consent) {
         logWarn('Recording blocked: no valid consent');
         Alert.alert(
@@ -47,9 +61,9 @@ export default function RecordScreen({ route, navigation }: Props) {
         );
         return;
       }
-      logInfo('Consent OK');
+      logEvent('Consent OK');
 
-      const granted = await requestMicPermission();
+      const granted = await withTimeout('mic permission', requestMicPermission(), 30000);
       if (!granted) {
         Alert.alert(
           'Microphone access needed',
@@ -58,8 +72,9 @@ export default function RecordScreen({ route, navigation }: Props) {
         return;
       }
 
-      await startRecording();
+      await withTimeout('start recording', startRecording(), 10000);
       setRecording(true);
+      logEvent('UI set to recording');
       setElapsed(0);
       timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
     } catch (e) {

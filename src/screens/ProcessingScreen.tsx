@@ -10,7 +10,7 @@ import { taskById } from '@/data/tasks';
 import { addSession, getProfile, getSettings } from '@/storage/store';
 import { Session } from '@/types';
 import { describeMode } from '@/config';
-import { logError, logEvent, logInfo } from '@/services/logger';
+import { logError, logEvent, logInfo, logWarn, withTimeout } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Processing'>;
 
@@ -33,8 +33,19 @@ export default function ProcessingScreen({ route, navigation }: Props) {
 
     (async () => {
       try {
-        const profile = await getProfile();
-        const settings = await getSettings();
+        // Bounded reads: never let a contended AsyncStorage stall the pipeline.
+        const profile = await withTimeout('load profile', getProfile(), 4000).catch(
+          (e) => {
+            logWarn('Profile read fell back to default', e);
+            return null;
+          }
+        );
+        const settings = await withTimeout('load settings', getSettings(), 4000).catch(
+          (e) => {
+            logWarn('Settings read fell back to default', e);
+            return { retainRawAudio: false };
+          }
+        );
         const level = profile?.level ?? 'high';
         const { taskId, mode, audioUri, durationSec } = route.params;
         logEvent('Analysis started', { engine: describeMode(), durationSec });

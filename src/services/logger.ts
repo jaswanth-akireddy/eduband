@@ -81,3 +81,25 @@ function subscribe(listener: Listener): () => void {
 export function useLogs(): LogEntry[] {
   return useSyncExternalStore(subscribe, getLogs, getLogs);
 }
+
+// Wrap an await so a hung native call (AsyncStorage, Audio permission, etc.)
+// surfaces as a visible error instead of an infinite spinner. Logs which step
+// stalled so the on-device panel pinpoints exactly where the flow is stuck.
+export function withTimeout<T>(label: string, promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => {
+      logError(`Timed out: ${label}`, `no response after ${ms}ms`);
+      reject(new Error(`${label} timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (v) => {
+        clearTimeout(id);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(id);
+        reject(e);
+      }
+    );
+  });
+}
