@@ -113,7 +113,11 @@ export default function RecordScreen({ route, navigation }: Props) {
           <Pressable
             onPress={recording ? onStop : onStart}
             disabled={starting}
-            style={[styles.recBtn, recording && styles.recBtnActive]}
+            style={({ pressed }) => [
+              styles.recBtn,
+              recording && styles.recBtnActive,
+              (pressed || starting) && { opacity: 0.7 },
+            ]}
           >
             <View style={recording ? styles.stopIcon : styles.micDot} />
           </Pressable>
