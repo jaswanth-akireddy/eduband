@@ -12,11 +12,28 @@ export interface RecordingResult {
 
 let recording: Audio.Recording | null = null;
 
+// Session-scoped cache of a confirmed-granted mic permission. Lets repeat
+// recordings skip the native permission call (which can hang on Android)
+// entirely. Deliberately in-memory only: permission is OS state the user can
+// revoke in Settings, so we re-verify on every fresh app launch and clear this
+// if a recording ever fails (see startRecording). We only cache the granted
+// case — a denial is never cached, so re-enabling in Settings is picked up.
+let micGrantedCache = false;
+
+export function getMicPermissionCache(): boolean {
+  return micGrantedCache;
+}
+
 // expo-av's Audio.requestPermissionsAsync() can hang on some Android devices
-// (the OS dialog never appears and the promise never resolves). So: check the
-// current status first (fast, never hangs), and on Android request through the
-// core PermissionsAndroid API directly, which reliably shows the dialog.
+// (the OS dialog never appears and the promise never resolves). So: use a
+// session cache when granted, otherwise check the current status first (fast,
+// never hangs), and on Android request through the core PermissionsAndroid API
+// directly, which reliably shows the dialog.
 export async function requestMicPermission(): Promise<boolean> {
+  if (micGrantedCache) {
+    logEvent('Microphone permission (cached)');
+    return true;
+  }
   try {
     const current = await Audio.getPermissionsAsync();
     logInfo('Mic permission status', {
@@ -24,6 +41,7 @@ export async function requestMicPermission(): Promise<boolean> {
       canAskAgain: current.canAskAgain,
     });
     if (current.granted) {
+      micGrantedCache = true;
       logEvent('Microphone already granted');
       return true;
     }
@@ -50,15 +68,23 @@ export async function requestMicPermission(): Promise<boolean> {
     );
     logInfo('PermissionsAndroid result', result);
     const granted = result === PermissionsAndroid.RESULTS.GRANTED;
-    if (granted) logEvent('Microphone permission granted');
-    else logError('Microphone permission denied', result);
+    if (granted) {
+      micGrantedCache = true;
+      logEvent('Microphone permission granted');
+    } else {
+      logError('Microphone permission denied', result);
+    }
     return granted;
   }
 
   logInfo('Requesting microphone permission…');
   const { granted } = await Audio.requestPermissionsAsync();
-  if (granted) logEvent('Microphone permission granted');
-  else logError('Microphone permission denied');
+  if (granted) {
+    micGrantedCache = true;
+    logEvent('Microphone permission granted');
+  } else {
+    logError('Microphone permission denied');
+  }
   return granted;
 }
 
@@ -89,6 +115,9 @@ export async function startRecording(): Promise<void> {
     recording = rec;
     logEvent('Recording started');
   } catch (e) {
+    // Recording can fail because permission was revoked in Settings since we
+    // cached it — invalidate so the next attempt re-requests instead of looping.
+    micGrantedCache = false;
     logError('Failed to start recording', e);
     throw e;
   }
