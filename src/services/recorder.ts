@@ -2,7 +2,8 @@
 // (Section 8: no passive capture in the MVP).
 
 import { Audio } from 'expo-av';
-import { logError, logEvent, logInfo } from './logger';
+import { PermissionsAndroid, Platform } from 'react-native';
+import { logError, logEvent, logInfo, logWarn } from './logger';
 
 export interface RecordingResult {
   uri: string | null;
@@ -11,7 +12,49 @@ export interface RecordingResult {
 
 let recording: Audio.Recording | null = null;
 
+// expo-av's Audio.requestPermissionsAsync() can hang on some Android devices
+// (the OS dialog never appears and the promise never resolves). So: check the
+// current status first (fast, never hangs), and on Android request through the
+// core PermissionsAndroid API directly, which reliably shows the dialog.
 export async function requestMicPermission(): Promise<boolean> {
+  try {
+    const current = await Audio.getPermissionsAsync();
+    logInfo('Mic permission status', {
+      status: current.status,
+      canAskAgain: current.canAskAgain,
+    });
+    if (current.granted) {
+      logEvent('Microphone already granted');
+      return true;
+    }
+    if (!current.canAskAgain) {
+      logWarn('Mic permission permanently denied — enable it in Settings');
+      return false;
+    }
+  } catch (e) {
+    // Don't block on a status read failure — fall through to the request.
+    logWarn('Could not read mic permission status', e);
+  }
+
+  if (Platform.OS === 'android') {
+    logInfo('Requesting RECORD_AUDIO via PermissionsAndroid…');
+    const result = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      {
+        title: 'Microphone access',
+        message:
+          'EduBand needs your microphone to record and analyse your speech.',
+        buttonPositive: 'Allow',
+        buttonNegative: 'Not now',
+      }
+    );
+    logInfo('PermissionsAndroid result', result);
+    const granted = result === PermissionsAndroid.RESULTS.GRANTED;
+    if (granted) logEvent('Microphone permission granted');
+    else logError('Microphone permission denied', result);
+    return granted;
+  }
+
   logInfo('Requesting microphone permission…');
   const { granted } = await Audio.requestPermissionsAsync();
   if (granted) logEvent('Microphone permission granted');

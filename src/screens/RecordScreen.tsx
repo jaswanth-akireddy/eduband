@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -67,7 +67,11 @@ export default function RecordScreen({ route, navigation }: Props) {
       if (!granted) {
         Alert.alert(
           'Microphone access needed',
-          'EduBand needs microphone permission to record. Enable it for EduBand in your device Settings, then try again.'
+          'EduBand needs microphone permission to record. Open Settings to enable it, then try again.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
         );
         return;
       }
