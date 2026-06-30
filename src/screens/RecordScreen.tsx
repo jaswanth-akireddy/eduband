@@ -32,30 +32,37 @@ export default function RecordScreen({ route, navigation }: Props) {
   }, []);
 
   async function onStart() {
-    const consent = await hasValidConsent();
-    if (!consent) {
-      Alert.alert(
-        'Consent required',
-        'Recording is blocked until parental/guardian consent is granted.'
-      );
-      return;
-    }
-    const granted = await requestMicPermission();
-    if (!granted) {
-      Alert.alert(
-        'Microphone needed',
-        'Please allow microphone access to record your speaking task.'
-      );
-      return;
-    }
+    // Everything is inside try/catch so a failure can never silently no-op the
+    // button. Any thrown error surfaces its real message instead of vanishing.
     setStarting(true);
     try {
+      const consent = await hasValidConsent();
+      if (!consent) {
+        Alert.alert(
+          'Consent required',
+          'Recording is blocked until parental/guardian consent is granted.'
+        );
+        return;
+      }
+
+      const granted = await requestMicPermission();
+      if (!granted) {
+        Alert.alert(
+          'Microphone access needed',
+          'EduBand needs microphone permission to record. Enable it for EduBand in your device Settings, then try again.'
+        );
+        return;
+      }
+
       await startRecording();
       setRecording(true);
       setElapsed(0);
       timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
     } catch (e) {
-      Alert.alert('Could not start', 'Something went wrong starting the recording.');
+      Alert.alert(
+        'Could not start recording',
+        e instanceof Error ? e.message : 'Unexpected error. Please try again.'
+      );
     } finally {
       setStarting(false);
     }
