@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
@@ -62,6 +62,12 @@ export default function ProcessingScreen({ route, navigation }: Props) {
         }
       } catch (e) {
         if (!cancelled) {
+          // Don't fail silently — tell the user what went wrong before bouncing
+          // back, so a pipeline error is visible instead of a mystery.
+          Alert.alert(
+            'Analysis failed',
+            e instanceof Error ? e.message : 'Something went wrong analysing your recording.'
+          );
           navigation.replace('Tabs', { screen: 'Home' } as never);
         }
       }

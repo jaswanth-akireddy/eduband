@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -59,6 +60,35 @@ export default function ReportScreen({ route, navigation }: Props) {
   const focusPillars = analysis.focusAreas
     .map((id) => analysis.pillars.find((p) => p.id === id))
     .filter(Boolean) as PillarScore[];
+
+  // Save the full transcript as a .txt file the student can keep and re-read.
+  async function onExportTranscript() {
+    if (!session) return;
+    const body = buildTranscriptText(session);
+    try {
+      const fileName = `eduband-transcript-${session.id}.txt`;
+      const uri = FileSystem.cacheDirectory + fileName;
+      await FileSystem.writeAsStringAsync(uri, body, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'text/plain',
+          dialogTitle: 'Save your transcript',
+          UTI: 'public.plain-text',
+        });
+      } else {
+        await Share.share({ message: body });
+      }
+    } catch (e) {
+      // Fall back to a plain text share if writing the file fails.
+      try {
+        await Share.share({ message: body });
+      } catch {
+        Alert.alert('Could not export', 'Unable to export the transcript right now.');
+      }
+    }
+  }
 
   return (
     <ScrollView
@@ -163,6 +193,19 @@ export default function ReportScreen({ route, navigation }: Props) {
         </Card>
       )}
 
+      {/* Transcript — saved with every session, exportable as a text file */}
+      <Card>
+        <Text style={styles.sectionTitle}>Your words</Text>
+        <Text style={styles.transcriptText}>{session.transcript.text}</Text>
+        <Button
+          title="Export transcript (.txt)"
+          variant="secondary"
+          icon="📄"
+          onPress={onExportTranscript}
+          style={{ marginTop: spacing.md }}
+        />
+      </Card>
+
       <Button
         title="Back to home"
         variant="ghost"
@@ -175,6 +218,27 @@ export default function ReportScreen({ route, navigation }: Props) {
       </Text>
     </ScrollView>
   );
+}
+
+function buildTranscriptText(session: Session): string {
+  const { analysis } = session;
+  const lines = [
+    'EduBand — Session transcript',
+    '================================',
+    `Date:     ${formatDate(session.createdAt)}`,
+    `Duration: ${formatDuration(session.durationSec)}`,
+    `Task:     ${session.taskPrompt}`,
+    `Communication Index: ${analysis.ci}/100`,
+    '',
+    'Pillars:',
+    ...analysis.pillars.map((p) => `  • ${p.label}: ${p.score}`),
+    '',
+    '--- What you said ---',
+    '',
+    session.transcript.text || '(no transcript captured)',
+    '',
+  ];
+  return lines.join('\n');
 }
 
 function formatDate(ms: number): string {
@@ -260,6 +324,14 @@ const styles = StyleSheet.create({
   },
   tipText: { color: colors.text, fontSize: font.body, lineHeight: 22 },
   suggestPrompt: { color: colors.textOnDark, fontSize: font.body, lineHeight: 24 },
+  transcriptText: {
+    color: colors.text,
+    fontSize: font.body,
+    lineHeight: 24,
+    backgroundColor: colors.cardMuted,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
   version: {
     color: colors.textMuted,
     fontSize: font.tiny,

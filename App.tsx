@@ -47,6 +47,7 @@ import ParentPortalScreen from '@/screens/ParentPortalScreen';
 import ProfessionalHomeScreen from '@/screens/ProfessionalHomeScreen';
 import ApiKeysScreen from '@/screens/ApiKeysScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
+import LaunchScreen from '@/components/LaunchScreen';
 import AuthScreen from '@/screens/AuthScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -117,6 +118,9 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
+      // Keep the launch screen up for a beat so opening the app feels deliberate,
+      // while the real boot work runs in parallel.
+      const minSplash = new Promise((r) => setTimeout(r, 1500));
       await loadCredentials();
       const role = await getRole();
       if (role === 'student') {
@@ -134,16 +138,13 @@ export default function App() {
       } else {
         setInitialRoute('RoleSelect');
       }
+      await minSplash;
       setLoading(false);
     })();
   }, []);
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <LaunchScreen />;
   }
 
   return (

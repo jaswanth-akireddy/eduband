@@ -15,7 +15,21 @@ export async function requestMicPermission(): Promise<boolean> {
   return granted;
 }
 
+// A recording left over from a previous attempt makes the next createAsync throw
+// ("Only one Recording object can be prepared at a given time"), which is the
+// classic "works once, fails on retry" bug. Always release before starting.
+async function releaseLingering(): Promise<void> {
+  if (!recording) return;
+  try {
+    await recording.stopAndUnloadAsync();
+  } catch {
+    // ignore — it may already be unloaded
+  }
+  recording = null;
+}
+
 export async function startRecording(): Promise<void> {
+  await releaseLingering();
   await Audio.setAudioModeAsync({
     allowsRecordingIOS: true,
     playsInSilentModeIOS: true,
@@ -27,25 +41,40 @@ export async function startRecording(): Promise<void> {
 }
 
 export async function stopRecording(): Promise<RecordingResult> {
-  if (!recording) return { uri: null, durationSec: 0 };
-  await recording.stopAndUnloadAsync();
-  const status = await recording.getStatusAsync();
-  const uri = recording.getURI();
-  const durationSec =
-    'durationMillis' in status && status.durationMillis
-      ? status.durationMillis / 1000
-      : 0;
+  const rec = recording;
+  // Clear the singleton up-front so that even if stop/unload throws, a stale
+  // object can never strand the next recording attempt.
   recording = null;
-  await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+  if (!rec) return { uri: null, durationSec: 0 };
+
+  // Read duration while still loaded; getStatusAsync can throw once unloaded.
+  let durationSec = 0;
+  try {
+    const status = await rec.getStatusAsync();
+    if ('durationMillis' in status && status.durationMillis) {
+      durationSec = status.durationMillis / 1000;
+    }
+  } catch {
+    // ignore — RecordScreen falls back to the on-screen elapsed timer
+  }
+
+  try {
+    await rec.stopAndUnloadAsync();
+  } catch {
+    // ignore
+  }
+
+  const uri = rec.getURI();
+
+  try {
+    await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+  } catch {
+    // ignore
+  }
+
   return { uri, durationSec };
 }
 
 export async function cancelRecording(): Promise<void> {
-  if (!recording) return;
-  try {
-    await recording.stopAndUnloadAsync();
-  } catch {
-    // ignore
-  }
-  recording = null;
+  await releaseLingering();
 }

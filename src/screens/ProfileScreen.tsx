@@ -13,7 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { colors, font, radius, spacing } from '@/theme';
-import { clearRole, exportData, getProfile, getRole } from '@/storage/store';
+import { clearRole, deleteAllData, exportData, getProfile, getRole } from '@/storage/store';
 import { getCurrentUser, signOut, authConfigured } from '@/services/auth';
 import { Role, StudentProfile } from '@/types';
 import Card from '@/components/Card';
@@ -64,10 +64,11 @@ export default function ProfileScreen({ navigation }: Props) {
       return;
     }
     setBusy(true);
-    // End the Supabase session (no-op in local/demo mode), then drop the local
-    // role so the app returns to the welcome screen and re-auth is required.
+    // End the Supabase session, then wipe this device's local account data so the
+    // next person to sign in never sees the previous account's profile/sessions.
+    // (Cross-device, per-account persistence belongs in Supabase — see notes.)
     await signOut();
-    await clearRole();
+    await deleteAllData();
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
   }
 

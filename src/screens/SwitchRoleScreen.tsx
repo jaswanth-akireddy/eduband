@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { colors, font, spacing } from '@/theme';
-import { clearRole } from '@/storage/store';
+import { clearRole, deleteAllData } from '@/storage/store';
 import { signOut } from '@/services/auth';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -35,8 +35,9 @@ export default function SwitchRoleScreen({
       return;
     }
     setBusy(true);
+    // End the session and wipe local account data so the next sign-in is clean.
     await signOut();
-    await clearRole();
+    await deleteAllData();
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
   }
 
