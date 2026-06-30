@@ -49,6 +49,7 @@ import ApiKeysScreen from '@/screens/ApiKeysScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import LaunchScreen from '@/components/LaunchScreen';
 import AuthScreen from '@/screens/AuthScreen';
+import DebugLogPanel from '@/components/DebugLogPanel';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabsParamList>();
@@ -188,6 +189,7 @@ export default function App() {
           <Stack.Screen name="ApiKeys" component={ApiKeysScreen} options={{ title: 'API Keys' }} />
         </Stack.Navigator>
       </NavigationContainer>
+      <DebugLogPanel />
     </SafeAreaProvider>
   );
 }

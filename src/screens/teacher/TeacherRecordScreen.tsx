@@ -14,6 +14,7 @@ import {
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Button from '@/components/Button';
+import { logError, logEvent } from '@/services/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TeacherRecord'>;
 
@@ -33,6 +34,7 @@ export default function TeacherRecordScreen({ navigation }: Props) {
   async function onStart() {
     // Wrapped in try/catch so a thrown error can never silently no-op the
     // button — any failure surfaces its real message instead of vanishing.
+    logEvent('Teacher record button tapped');
     setStarting(true);
     try {
       const granted = await requestMicPermission();
@@ -45,6 +47,7 @@ export default function TeacherRecordScreen({ navigation }: Props) {
       setElapsed(0);
       timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
     } catch (e) {
+      logError('Could not start teacher recording', e);
       Alert.alert(
         'Could not start recording',
         e instanceof Error ? e.message : 'Unexpected error. Please try again.'

@@ -2,6 +2,7 @@
 // (Section 8: no passive capture in the MVP).
 
 import { Audio } from 'expo-av';
+import { logError, logEvent, logInfo } from './logger';
 
 export interface RecordingResult {
   uri: string | null;
@@ -11,7 +12,10 @@ export interface RecordingResult {
 let recording: Audio.Recording | null = null;
 
 export async function requestMicPermission(): Promise<boolean> {
+  logInfo('Requesting microphone permission…');
   const { granted } = await Audio.requestPermissionsAsync();
+  if (granted) logEvent('Microphone permission granted');
+  else logError('Microphone permission denied');
   return granted;
 }
 
@@ -29,23 +33,34 @@ async function releaseLingering(): Promise<void> {
 }
 
 export async function startRecording(): Promise<void> {
+  logInfo('Starting recording…');
   await releaseLingering();
   await Audio.setAudioModeAsync({
     allowsRecordingIOS: true,
     playsInSilentModeIOS: true,
   });
-  const { recording: rec } = await Audio.Recording.createAsync(
-    Audio.RecordingOptionsPresets.HIGH_QUALITY
-  );
-  recording = rec;
+  try {
+    const { recording: rec } = await Audio.Recording.createAsync(
+      Audio.RecordingOptionsPresets.HIGH_QUALITY
+    );
+    recording = rec;
+    logEvent('Recording started');
+  } catch (e) {
+    logError('Failed to start recording', e);
+    throw e;
+  }
 }
 
 export async function stopRecording(): Promise<RecordingResult> {
+  logInfo('Stopping recording…');
   const rec = recording;
   // Clear the singleton up-front so that even if stop/unload throws, a stale
   // object can never strand the next recording attempt.
   recording = null;
-  if (!rec) return { uri: null, durationSec: 0 };
+  if (!rec) {
+    logError('Stop called but no active recording');
+    return { uri: null, durationSec: 0 };
+  }
 
   // Read duration while still loaded; getStatusAsync can throw once unloaded.
   let durationSec = 0;
@@ -72,6 +87,7 @@ export async function stopRecording(): Promise<RecordingResult> {
     // ignore
   }
 
+  logEvent('Recording saved', { uri, durationSec: Math.round(durationSec) });
   return { uri, durationSec };
 }
 
