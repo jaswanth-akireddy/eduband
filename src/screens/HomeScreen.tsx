@@ -16,6 +16,7 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import ScoreRing from '@/components/ScoreRing';
 import Avatar from '@/components/Avatar';
+import Skeleton from '@/components/Skeleton';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Home'>,
@@ -25,12 +26,15 @@ type Props = CompositeScreenProps<
 export default function HomeScreen({ navigation }: Props) {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        setProfile(await getProfile());
-        setSessions(await getSessions());
+        const [p, s] = await Promise.all([getProfile(), getSessions()]);
+        setProfile(p);
+        setSessions(s);
+        setLoaded(true);
       })();
     }, [])
   );
@@ -56,7 +60,13 @@ export default function HomeScreen({ navigation }: Props) {
             </Pressable>
           </View>
 
-          {latest ? (
+          {!loaded ? (
+            <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
+              <Skeleton width={172} height={172} round />
+              <Skeleton width={'55%'} height={14} style={{ marginTop: spacing.lg }} />
+              <Skeleton width={'80%'} height={44} style={{ marginTop: spacing.lg }} />
+            </Card>
+          ) : latest ? (
             <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
               <ScoreRing
                 score={latest.analysis.ci}
@@ -91,9 +101,12 @@ export default function HomeScreen({ navigation }: Props) {
               />
             </Card>
           ) : (
-            <Card variant="glass">
+            <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
+              <View style={styles.emptyBadge}>
+                <Text style={styles.emptyBadgeIcon}>🎙️</Text>
+              </View>
               <Text style={styles.emptyTitle}>Your first session awaits</Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyText, { textAlign: 'center' }]}>
                 Record a short 2-minute speaking task and get a friendly,
                 growth-focused report across five communication skills.
               </Text>
@@ -184,6 +197,16 @@ const styles = StyleSheet.create({
   },
   focusDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.sm },
   focusChipText: { color: colors.textOnDark, fontSize: font.small, fontWeight: '700' },
+  emptyBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primary + '22',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  emptyBadgeIcon: { fontSize: 34 },
   emptyTitle: { fontSize: font.h3, fontWeight: '800', color: colors.textOnDark, marginBottom: spacing.sm },
   emptyText: { color: colors.textMutedOnDark, fontSize: font.body, lineHeight: 22 },
   sectionTitle: {

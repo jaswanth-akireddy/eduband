@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -24,13 +24,18 @@ import ScoreRing from '@/components/ScoreRing';
 import PillarRadar from '@/components/PillarRadar';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
+import Confetti from '@/components/Confetti';
+import Skeleton from '@/components/Skeleton';
 import { logError, logEvent, logInfo } from '@/services/logger';
+import { notifySuccess } from '@/services/haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Report'>;
 
 export default function ReportScreen({ route, navigation }: Props) {
   const [session, setSession] = useState<Session | null>(null);
   const [prevCi, setPrevCi] = useState<number | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const fired = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,7 +45,15 @@ export default function ReportScreen({ route, navigation }: Props) {
         if (s) {
           const all = await getSessions();
           const older = all.filter((x) => x.createdAt < s.createdAt);
-          setPrevCi(older.length ? older[0].analysis.ci : null);
+          const prev = older.length ? older[0].analysis.ci : null;
+          setPrevCi(prev);
+          // Reward the moment once per open: a success tap, plus confetti when
+          // the Communication Index beat the previous session.
+          if (!fired.current) {
+            fired.current = true;
+            notifySuccess();
+            if (prev != null && s.analysis.ci > prev) setCelebrate(true);
+          }
         }
       })();
     }, [route.params.sessionId])
@@ -48,8 +61,13 @@ export default function ReportScreen({ route, navigation }: Props) {
 
   if (!session) {
     return (
-      <View style={styles.loading}>
-        <Text style={{ color: colors.textMuted }}>Loading report…</Text>
+      <View style={styles.skeletonScreen}>
+        <Skeleton width="70%" height={22} />
+        <Skeleton width="45%" height={14} style={{ marginTop: spacing.sm }} />
+        <Skeleton width={180} height={180} round style={{ alignSelf: 'center', marginTop: spacing.xl }} />
+        <Skeleton height={90} style={{ marginTop: spacing.xl }} />
+        <Skeleton height={64} style={{ marginTop: spacing.md }} />
+        <Skeleton height={64} style={{ marginTop: spacing.md }} />
       </View>
     );
   }
@@ -98,6 +116,7 @@ export default function ReportScreen({ route, navigation }: Props) {
   }
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView
       style={styles.screen}
       contentContainerStyle={{ padding: spacing.lg }}
@@ -224,6 +243,8 @@ export default function ReportScreen({ route, navigation }: Props) {
         Framework v{analysis.frameworkVersion} · Model {analysis.modelVersion}
       </Text>
     </ScrollView>
+      <Confetti trigger={celebrate} />
+    </View>
   );
 }
 
@@ -265,6 +286,7 @@ function formatDuration(sec: number): string {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  skeletonScreen: { flex: 1, backgroundColor: colors.bg, padding: spacing.lg },
   task: { fontSize: font.h3, fontWeight: '700', color: colors.text, lineHeight: 26 },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
   trend: { marginTop: spacing.md, fontSize: font.small, fontWeight: '700' },

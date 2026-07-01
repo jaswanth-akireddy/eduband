@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -14,7 +14,9 @@ import {
   stopRecording,
 } from '@/services/recorder';
 import Button from '@/components/Button';
+import RecordingWave from '@/components/RecordingWave';
 import { logError, logEvent, logInfo, logWarn, withTimeout } from '@/services/logger';
+import { notifyWarning, tapLight, tapMedium } from '@/services/haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
@@ -24,6 +26,7 @@ export default function RecordScreen({ route, navigation }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [starting, setStarting] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     return () => {
@@ -31,6 +34,23 @@ export default function RecordScreen({ route, navigation }: Props) {
       cancelRecording();
     };
   }, []);
+
+  // Expanding-ring pulse behind the button while recording, so it feels alive.
+  useEffect(() => {
+    if (!recording) {
+      pulse.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.timing(pulse, {
+        toValue: 1.7,
+        duration: 1300,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [recording, pulse]);
 
   // Confirms React actually re-renders when the recording flag flips. If
   // startRecording logs but this never fires, the hang is in rendering, not audio.
@@ -78,6 +98,7 @@ export default function RecordScreen({ route, navigation }: Props) {
 
       await withTimeout('start recording', startRecording(), 10000);
       setRecording(true);
+      tapMedium();
       logEvent('UI set to recording');
       setElapsed(0);
       timer.current = setInterval(() => setElapsed((e) => e + 1), 1000);
@@ -95,10 +116,12 @@ export default function RecordScreen({ route, navigation }: Props) {
   async function onStop() {
     if (timer.current) clearInterval(timer.current);
     setRecording(false);
+    tapLight();
     const result = await stopRecording();
     const durationSec = result.durationSec || elapsed;
     if (durationSec < 5) {
       logWarn('Recording too short, discarded', { durationSec: Math.round(durationSec) });
+      notifyWarning();
       Alert.alert(
         'A little longer',
         'Try to speak for at least a few seconds so we can give useful feedback.'
@@ -136,17 +159,36 @@ export default function RecordScreen({ route, navigation }: Props) {
 
         <View style={styles.center}>
           <Text style={styles.timer}>{formatTime(elapsed)}</Text>
-          <Pressable
-            onPress={recording ? onStop : onStart}
-            disabled={starting}
-            style={({ pressed }) => [
-              styles.recBtn,
-              recording && styles.recBtnActive,
-              (pressed || starting) && { opacity: 0.7 },
-            ]}
-          >
-            <View style={recording ? styles.stopIcon : styles.micDot} />
-          </Pressable>
+          <View style={styles.waveSlot}>
+            <RecordingWave color={colors.low} active={recording} />
+          </View>
+          <View style={styles.btnWrap}>
+            {recording && (
+              <Animated.View
+                style={[
+                  styles.pulse,
+                  {
+                    transform: [{ scale: pulse }],
+                    opacity: pulse.interpolate({
+                      inputRange: [1, 1.7],
+                      outputRange: [0.45, 0],
+                    }),
+                  },
+                ]}
+              />
+            )}
+            <Pressable
+              onPress={recording ? onStop : onStart}
+              disabled={starting}
+              style={({ pressed }) => [
+                styles.recBtn,
+                recording && styles.recBtnActive,
+                (pressed || starting) && { opacity: 0.7 },
+              ]}
+            >
+              <View style={recording ? styles.stopIcon : styles.micDot} />
+            </Pressable>
+          </View>
           <Text style={styles.recLabel}>
             {recording ? 'Tap to stop' : 'Tap to record'}
           </Text>
@@ -199,7 +241,16 @@ const styles = StyleSheet.create({
     fontSize: 52,
     fontWeight: '300',
     fontVariant: ['tabular-nums'],
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  waveSlot: { height: 40, justifyContent: 'center', marginBottom: spacing.md },
+  btnWrap: { width: 120, height: 120, alignItems: 'center', justifyContent: 'center' },
+  pulse: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.low,
   },
   recBtn: {
     width: 120,
