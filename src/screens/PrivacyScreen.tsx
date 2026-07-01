@@ -67,7 +67,7 @@ export default function PrivacyScreen({ navigation }: Props) {
           text: 'Delete everything',
           style: 'destructive',
           onPress: async () => {
-            await deleteAllData();
+            await deleteAllData(true); // also wipe remote (GDPR-style delete)
             navigation.getParent()?.reset({
               index: 0,
               routes: [{ name: 'RoleSelect' }],
