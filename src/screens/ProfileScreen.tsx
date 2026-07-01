@@ -13,9 +13,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { colors, font, radius, spacing } from '@/theme';
-import { clearRole, deleteAllData, exportData, getProfile, getRole, saveProfile } from '@/storage/store';
+import { clearRole, deleteAllData, exportData, getProfile, getRole } from '@/storage/store';
 import { getCurrentUser, signOut, authConfigured } from '@/services/auth';
-import { Gender, Role, StudentProfile } from '@/types';
+import { Role, StudentProfile } from '@/types';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Avatar from '@/components/Avatar';
@@ -27,12 +27,6 @@ const levelLabel: Record<string, string> = {
   high: 'High school',
   college: 'College',
 };
-
-const GENDERS: { id: Gender; label: string }[] = [
-  { id: 'female', label: 'Female' },
-  { id: 'male', label: 'Male' },
-  { id: 'other', label: 'Other' },
-];
 
 export default function ProfileScreen({ navigation }: Props) {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
@@ -63,13 +57,6 @@ export default function ProfileScreen({ navigation }: Props) {
   );
 
   const name = profile?.name?.trim() || 'EduBand user';
-
-  async function onSetGender(g: Gender) {
-    if (!profile) return;
-    const next = { ...profile, gender: g };
-    setProfile(next);
-    await saveProfile(next);
-  }
 
   async function onLogout() {
     if (!confirmingLogout) {
@@ -103,25 +90,9 @@ export default function ProfileScreen({ navigation }: Props) {
       {/* Identity */}
       <Card style={styles.identity}>
         <View style={styles.avatarWrap}>
-          <Avatar gender={profile?.gender} seed={name} size={80} />
+          <Avatar seed={name} size={80} />
         </View>
         <Text style={styles.name}>{name}</Text>
-        {profile ? (
-          <View style={styles.genderRow}>
-            {GENDERS.map((g) => (
-              <Text
-                key={g.id}
-                onPress={() => onSetGender(g.id)}
-                style={[
-                  styles.genderChip,
-                  (profile.gender ?? 'other') === g.id && styles.genderChipActive,
-                ]}
-              >
-                {g.label}
-              </Text>
-            ))}
-          </View>
-        ) : null}
         {email ? (
           <Text style={styles.email}>{email}</Text>
         ) : (
@@ -213,24 +184,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   identity: { alignItems: 'center', paddingVertical: spacing.xl },
   avatarWrap: { marginBottom: spacing.md },
-  genderRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  genderChip: {
-    color: colors.textMuted,
-    backgroundColor: colors.surfaceAlt,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.pill,
-    paddingVertical: 6,
-    paddingHorizontal: spacing.md,
-    overflow: 'hidden',
-    fontSize: font.tiny,
-    fontWeight: '700',
-  },
-  genderChipActive: {
-    color: colors.white,
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
   name: { fontSize: font.h2, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
   email: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   emailFaint: { fontSize: font.small, color: colors.textFaint, marginTop: 2 },
