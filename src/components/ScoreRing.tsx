@@ -8,6 +8,7 @@ interface Props {
   size?: number;
   label?: string;
   onDark?: boolean;
+  avatar?: React.ReactNode; // optional personalised face shown in the centre
 }
 
 // Premium circular gauge for the Communication Index, with a gradient arc.
@@ -16,6 +17,7 @@ export default function ScoreRing({
   size = 180,
   label = 'Communication Index',
   onDark = false,
+  avatar,
 }: Props) {
   const stroke = 14;
   const r = (size - stroke) / 2;
@@ -55,7 +57,13 @@ export default function ScoreRing({
         />
       </Svg>
       <View style={styles.center}>
-        <Text style={[styles.score, { color: onDark ? colors.white : color }]}>
+        {avatar ? <View style={styles.avatarWrap}>{avatar}</View> : null}
+        <Text
+          style={[
+            avatar ? styles.scoreWithAvatar : styles.score,
+            { color: onDark ? colors.white : color },
+          ]}
+        >
           {score}
         </Text>
         <View style={[styles.bandPill, { backgroundColor: color + '22' }]}>
@@ -80,6 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   score: { fontSize: 50, fontWeight: '800', letterSpacing: -1 },
+  scoreWithAvatar: { fontSize: 34, fontWeight: '800', letterSpacing: -1, marginTop: 4 },
+  avatarWrap: { marginBottom: 2 },
   bandPill: {
     paddingHorizontal: 12,
     paddingVertical: 3,

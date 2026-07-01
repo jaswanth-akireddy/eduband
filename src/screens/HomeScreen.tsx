@@ -15,6 +15,7 @@ import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 import ScoreRing from '@/components/ScoreRing';
+import Avatar from '@/components/Avatar';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Home'>,
@@ -51,15 +52,18 @@ export default function HomeScreen({ navigation }: Props) {
               accessibilityLabel="Open profile"
               style={({ pressed }) => [styles.avatar, pressed && { opacity: 0.85 }]}
             >
-              <Text style={styles.avatarText}>
-                {(profile?.name?.[0] ?? 'E').toUpperCase()}
-              </Text>
+              <Avatar gender={profile?.gender} seed={profile?.name} size={48} />
             </Pressable>
           </View>
 
           {latest ? (
             <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-              <ScoreRing score={latest.analysis.ci} onDark size={172} />
+              <ScoreRing
+                score={latest.analysis.ci}
+                onDark
+                size={172}
+                avatar={<Avatar gender={profile?.gender} seed={profile?.name} size={60} />}
+              />
               <Text style={styles.trendText}>{trendText(sessions)}</Text>
               {latest.analysis.focusAreas[0] && (
                 <View

@@ -82,11 +82,16 @@ export interface Task {
   suggestedSeconds: number;
 }
 
+export type Gender = 'female' | 'male' | 'other';
+
 export interface StudentProfile {
   name: string;
   level: Level;
   language: string;
   schoolCode: string;
+  // Optional: drives the personalised avatar. Absent on profiles created before
+  // this field existed — treat as 'other' (a neutral avatar).
+  gender?: Gender;
 }
 
 export interface ConsentRecord {
