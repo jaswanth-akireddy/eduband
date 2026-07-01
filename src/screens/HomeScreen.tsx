@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
 import { colors, font, pillarColor, spacing } from '@/theme';
 import { getProfile, getSessions } from '@/storage/store';
+import { currentUserId, subscribeSessions } from '@/services/sessionsSync';
 import { Session, StudentProfile } from '@/types';
 import { pillarDef } from '@/analysis/framework';
 import GradientBackground from '@/components/GradientBackground';
@@ -38,6 +39,27 @@ export default function HomeScreen({ navigation }: Props) {
       })();
     }, [])
   );
+
+  // Live updates: when signed in, refresh sessions the moment Supabase reports
+  // an insert/update/delete for this user (e.g. a session recorded elsewhere).
+  useEffect(() => {
+    let active = true;
+    let unsub = () => {};
+    (async () => {
+      const uid = await currentUserId();
+      if (uid && active) {
+        unsub = subscribeSessions(uid, () => {
+          getSessions().then((s) => {
+            if (active) setSessions(s);
+          });
+        });
+      }
+    })();
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, []);
 
   const latest = sessions[0];
 

@@ -7,6 +7,7 @@ import { colors, font, spacing } from '@/theme';
 import { transcribe } from '@/analysis/stt';
 import { analyze } from '@/analysis/pipeline';
 import { taskById } from '@/data/tasks';
+import * as Crypto from 'expo-crypto';
 import { addSession, getProfile, getSettings } from '@/storage/store';
 import { Session } from '@/types';
 import { describeMode } from '@/config';
@@ -58,7 +59,8 @@ export default function ProcessingScreen({ route, navigation }: Props) {
 
         const task = taskById(taskId);
         const session: Session = {
-          id: `s_${Date.now()}`,
+          // uuid so the same id is used locally and as the Supabase row id
+          id: Crypto.randomUUID(),
           taskId,
           taskPrompt: task?.prompt ?? 'Free speaking',
           mode,
