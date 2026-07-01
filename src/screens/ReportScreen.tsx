@@ -20,7 +20,7 @@ import { PillarScore, Session } from '@/types';
 import { taskById } from '@/data/tasks';
 import { pillarDef } from '@/analysis/framework';
 import GradientBackground from '@/components/GradientBackground';
-import ScoreRing from '@/components/ScoreRing';
+import ScoreGauge from '@/components/ScoreGauge';
 import PillarRadar from '@/components/PillarRadar';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
@@ -129,7 +129,8 @@ export default function ReportScreen({ route, navigation }: Props) {
 
       {/* Communication Index */}
       <Card style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-        <ScoreRing score={analysis.ci} />
+        <Text style={styles.indexTitle}>Communication Index</Text>
+        <ScoreGauge score={analysis.ci} size={252} />
         {trend != null && (
           <Text
             style={[
@@ -290,6 +291,7 @@ const styles = StyleSheet.create({
   task: { fontSize: font.h3, fontWeight: '700', color: colors.text, lineHeight: 26 },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
   trend: { marginTop: spacing.md, fontSize: font.small, fontWeight: '700' },
+  indexTitle: { fontSize: font.h3, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
   sectionTitle: {
     fontSize: font.h3,
     fontWeight: '700',
