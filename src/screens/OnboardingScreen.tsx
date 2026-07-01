@@ -11,10 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
-import { Level } from '@/types';
+import { Gender, Level } from '@/types';
 import { colors, font, radius, spacing } from '@/theme';
 import { saveProfile, clearRole } from '@/storage/store';
 import Button from '@/components/Button';
+import Avatar from '@/components/Avatar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
@@ -24,10 +25,17 @@ const LEVELS: { id: Level; label: string }[] = [
   { id: 'college', label: 'College' },
 ];
 
+const GENDERS: { id: Gender; label: string }[] = [
+  { id: 'female', label: 'Female' },
+  { id: 'male', label: 'Male' },
+  { id: 'other', label: 'Other' },
+];
+
 export default function OnboardingScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
   const [level, setLevel] = useState<Level>('high');
+  const [gender, setGender] = useState<Gender>('other');
   const [language] = useState('English');
 
   const canContinue = name.trim().length > 1 && schoolCode.trim().length >= 4;
@@ -37,6 +45,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       name: name.trim(),
       schoolCode: schoolCode.trim().toUpperCase(),
       level,
+      gender,
       language,
     });
     navigation.replace('Consent');
@@ -98,6 +107,25 @@ export default function OnboardingScreen({ navigation }: Props) {
                 </Text>
               ))}
             </View>
+
+            <Text style={styles.label}>Your avatar</Text>
+            <View style={styles.genderRow}>
+              <Avatar gender={gender} seed={name || 'EduBand'} size={64} />
+              <View style={styles.genderChips}>
+                {GENDERS.map((g) => (
+                  <Text
+                    key={g.id}
+                    onPress={() => setGender(g.id)}
+                    style={[
+                      styles.levelChip,
+                      gender === g.id && styles.levelChipActive,
+                    ]}
+                  >
+                    {g.label}
+                  </Text>
+                ))}
+              </View>
+            </View>
           </View>
 
           <View style={{ flex: 1 }} />
@@ -156,6 +184,8 @@ const styles = StyleSheet.create({
     borderColor: colors.borderDark,
   },
   levelRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  genderRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  genderChips: { flex: 1, flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
   levelChip: {
     color: colors.textMutedOnDark,
     backgroundColor: colors.surface,
