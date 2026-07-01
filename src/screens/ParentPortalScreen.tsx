@@ -9,7 +9,7 @@ import { clearRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
-import ScoreRing from '@/components/ScoreRing';
+import ScoreGauge from '@/components/ScoreGauge';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ParentPortal'>;
 
@@ -27,7 +27,8 @@ export default function ParentPortalScreen({ navigation }: Props) {
           <Text style={styles.sub}>Communication insights</Text>
 
           <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-            <ScoreRing score={76} onDark size={168} />
+            <Text style={styles.indexTitle}>Communication Index</Text>
+            <ScoreGauge score={76} size={240} />
             <Text style={styles.goodNews}>Improving steadily this term 🎉</Text>
           </Card>
 
@@ -62,6 +63,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
+  indexTitle: { fontSize: font.h3, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
   goodNews: { color: colors.good, fontSize: font.small, fontWeight: '700', marginTop: spacing.md },
   head: { fontSize: font.h3, fontWeight: '700', marginBottom: spacing.sm },
   item: { fontSize: font.body, color: colors.textMuted, lineHeight: 24 },

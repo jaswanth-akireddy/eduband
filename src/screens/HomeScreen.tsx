@@ -14,7 +14,7 @@ import { pillarDef } from '@/analysis/framework';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
-import ScoreRing from '@/components/ScoreRing';
+import ScoreGauge from '@/components/ScoreGauge';
 import Avatar from '@/components/Avatar';
 import Skeleton from '@/components/Skeleton';
 
@@ -68,12 +68,8 @@ export default function HomeScreen({ navigation }: Props) {
             </Card>
           ) : latest ? (
             <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-              <ScoreRing
-                score={latest.analysis.ci}
-                onDark
-                size={172}
-                avatar={<Avatar gender={profile?.gender} seed={profile?.name} size={60} />}
-              />
+              <Text style={styles.cardTitle}>Communication Index</Text>
+              <ScoreGauge score={latest.analysis.ci} size={248} />
               <Text style={styles.trendText}>{trendText(sessions)}</Text>
               {latest.analysis.focusAreas[0] && (
                 <View
@@ -181,6 +177,12 @@ const styles = StyleSheet.create({
     borderColor: colors.surfaceGlassBorder,
   },
   avatarText: { color: colors.white, fontSize: font.h3, fontWeight: '800' },
+  cardTitle: {
+    color: colors.textOnDark,
+    fontSize: font.h3,
+    fontWeight: '800',
+    marginBottom: spacing.sm,
+  },
   trendText: {
     color: colors.textMutedOnDark,
     fontSize: font.small,
