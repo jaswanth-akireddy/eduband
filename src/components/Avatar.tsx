@@ -10,9 +10,11 @@ interface Props {
 
 // Initials monogram avatar (Gmail/Notion style). Deterministic: the same name
 // always gets the same letters and colour. On-device, no network.
+// Curated palette — reads well with white text and against both the dark score
+// ring and white surfaces.
 const PALETTE = [
-  '#FF385C', '#008489', '#7B61FF', '#F0714F',
-  '#3FB16D', '#E0568A', '#5B8DEF', '#E8A33B',
+  '#4263EB', '#0CA678', '#F76707', '#E64980', '#7048E8',
+  '#1098AD', '#F59F00', '#D6336C', '#2F9E44', '#3B5BDB',
 ];
 
 function hashOf(s: string): number {
@@ -37,6 +39,9 @@ export default function Avatar({ seed = 'EduBand', size = 64 }: Props) {
     return { initials: initialsOf(s), bg: PALETTE[hashOf(s) % PALETTE.length] };
   }, [seed]);
 
+  // Single initials read larger; two fit a touch smaller.
+  const fontSize = Math.round(size * (initials.length > 1 ? 0.4 : 0.46));
+
   return (
     <View
       style={[
@@ -44,12 +49,26 @@ export default function Avatar({ seed = 'EduBand', size = 64 }: Props) {
         { width: size, height: size, borderRadius: size / 2, backgroundColor: bg },
       ]}
     >
-      <Text style={[styles.text, { fontSize: Math.round(size * 0.42) }]}>{initials}</Text>
+      <Text
+        allowFontScaling={false}
+        style={[styles.text, { fontSize, lineHeight: fontSize }]}
+      >
+        {initials}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: 'center', justifyContent: 'center' },
-  text: { color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.5 },
+  wrap: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  // includeFontPadding:false + no letterSpacing keeps the glyphs optically
+  // centred (Android adds top/bottom padding; trailing letter-spacing shifts
+  // two-letter monograms right).
+  text: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+  },
 });
