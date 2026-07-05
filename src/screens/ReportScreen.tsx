@@ -7,13 +7,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import {
-  colors,
   font,
+  makeStyles,
   radius,
   scoreColor,
   scoreBand,
   spacing,
   pillarColor,
+  useColors,
 } from '@/theme';
 import { getSession, getSessions } from '@/storage/store';
 import { PillarScore, Session } from '@/types';
@@ -32,6 +33,8 @@ import { notifySuccess } from '@/services/haptics';
 type Props = NativeStackScreenProps<RootStackParamList, 'Report'>;
 
 export default function ReportScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [session, setSession] = useState<Session | null>(null);
   const [prevCi, setPrevCi] = useState<number | null>(null);
   const [celebrate, setCelebrate] = useState(false);
@@ -284,7 +287,7 @@ function formatDuration(sec: number): string {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   skeletonScreen: { flex: 1, backgroundColor: colors.bg, padding: spacing.lg },
@@ -369,4 +372,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
-});
+}));

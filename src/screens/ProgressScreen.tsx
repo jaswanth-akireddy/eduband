@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, radius, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, radius, scoreColor, spacing } from '@/theme';
 import { getSessions } from '@/storage/store';
 import { Session } from '@/types';
 import Card from '@/components/Card';
@@ -18,6 +18,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function ProgressScreen({ navigation }: Props) {
+  const styles = useStyles();
   const [sessions, setSessions] = useState<Session[]>([]);
 
   useFocusEffect(
@@ -89,6 +90,7 @@ export default function ProgressScreen({ navigation }: Props) {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.stat}>
       <Text style={styles.statValue}>{value}</Text>
@@ -123,7 +125,7 @@ function formatDate(ms: number): string {
   });
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md },
   cardLabel: {
@@ -162,4 +164,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   histScoreText: { fontSize: font.h3, fontWeight: '800' },
-});
+}));

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, scoreColor, shadow, spacing } from '@/theme';
+import { colors, font, makeStyles, radius, scoreColor, shadow, spacing } from '@/theme';
 import { clearRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -20,6 +20,7 @@ const MODULES = [
 ];
 
 export default function ProfessionalHomeScreen({ navigation }: Props) {
+  const styles = useStyles();
   async function switchRole() {
     await clearRole();
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
@@ -69,7 +70,7 @@ export default function ProfessionalHomeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   hi: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2 },
   section: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginTop: spacing.lg, marginBottom: spacing.md },
@@ -89,4 +90,4 @@ const styles = StyleSheet.create({
   latestTitle: { fontSize: font.body, fontWeight: '700', color: colors.text },
   latestSub: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   latestScore: { fontSize: font.h1, fontWeight: '800', marginLeft: spacing.md },
-});
+}));

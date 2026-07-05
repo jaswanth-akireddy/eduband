@@ -7,7 +7,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, radius, shadow, spacing } from '@/theme';
+import { font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
@@ -18,6 +18,8 @@ type Props = CompositeScreenProps<
 >;
 
 export default function LanguageLabScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [lastSync] = useState('today 4:30 PM');
 
   return (
@@ -100,7 +102,7 @@ export default function LanguageLabScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.small, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
   deviceRow: { flexDirection: 'row', alignItems: 'center' },
@@ -119,4 +121,4 @@ const styles = StyleSheet.create({
   privacyHead: { fontSize: font.body, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   privacyItem: { fontSize: font.small, color: colors.textMuted, lineHeight: 24 },
   phase: { color: colors.textFaint, fontSize: font.tiny, textAlign: 'center', marginTop: spacing.md },
-});
+}));

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius } from '@/theme';
+import { Animated, ViewStyle } from 'react-native';
+import { makeStyles, radius } from '@/theme';
 
 // Shimmering placeholder block for loading states (Airbnb-style skeletons).
 export default function Skeleton({
@@ -15,6 +15,7 @@ export default function Skeleton({
   style?: ViewStyle;
 }) {
   const opacity = useRef(new Animated.Value(0.45)).current;
+  const styles = useStyles();
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -39,6 +40,6 @@ export default function Skeleton({
   );
 }
 
-const styles = StyleSheet.create({
-  base: { backgroundColor: colors.cardMuted, width: '100%' },
-});
+const useStyles = makeStyles((colors) => ({
+  base: { backgroundColor: colors.cardMuted, width: '100%' as const },
+}));

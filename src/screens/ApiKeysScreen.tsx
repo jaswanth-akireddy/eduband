@@ -12,7 +12,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing, useColors } from '@/theme';
 import {
   Credentials,
   clearCredentials,
@@ -27,6 +27,8 @@ import Button from '@/components/Button';
 type Props = NativeStackScreenProps<RootStackParamList, 'ApiKeys'>;
 
 export default function ApiKeysScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [creds, setCreds] = useState<Credentials>({
     apiBase: '',
     sttProvider: 'deepgram',
@@ -169,6 +171,8 @@ function Field({
   placeholder?: string;
   secure?: boolean;
 }) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <View style={{ marginTop: spacing.md }}>
       <Text style={styles.label}>{label}</Text>
@@ -186,7 +190,7 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.small, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.md, lineHeight: 20 },
   modePill: {
@@ -230,4 +234,4 @@ const styles = StyleSheet.create({
   },
   provChipActive: { color: colors.white, backgroundColor: colors.primary, borderColor: colors.primary },
   note: { color: colors.textFaint, fontSize: font.tiny, marginTop: spacing.md, lineHeight: 16 },
-});
+}));

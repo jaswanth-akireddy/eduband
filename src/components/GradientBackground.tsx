@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '@/theme';
+import { makeStyles, useColors } from '@/theme';
 
-// Clean, airy light canvas. A barely-there warm wash at the top keeps it from
-// feeling clinical; no heavy blobs — the content does the talking.
+// Clean, airy canvas. A barely-there warm wash at the top keeps it from feeling
+// clinical; no heavy blobs — the content does the talking.
 export default function GradientBackground({
   children,
   style,
@@ -12,6 +12,8 @@ export default function GradientBackground({
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <LinearGradient
       colors={colors.bgGradient}
@@ -25,7 +27,7 @@ export default function GradientBackground({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   fill: { flex: 1, backgroundColor: colors.bg },
   // a soft coral halo, almost imperceptible, anchored top-right
   wash: {
@@ -38,4 +40,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     opacity: 0.05,
   },
-});
+}));

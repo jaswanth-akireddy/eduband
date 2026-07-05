@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, spacing } from '@/theme';
+import { font, makeStyles, spacing } from '@/theme';
 import { clearRole, deleteAllData } from '@/storage/store';
 import { signOut } from '@/services/auth';
 import GradientBackground from '@/components/GradientBackground';
@@ -21,6 +21,7 @@ export default function SwitchRoleScreen({
   name: string;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const styles = useStyles();
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -78,7 +79,7 @@ export default function SwitchRoleScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
   name: { fontSize: font.h2, fontWeight: '800', color: colors.text },
   role: { fontSize: font.body, color: colors.textMuted, marginTop: 4 },
@@ -90,4 +91,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: spacing.sm,
   },
-});
+}));

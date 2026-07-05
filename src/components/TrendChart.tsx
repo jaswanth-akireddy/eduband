@@ -8,7 +8,7 @@ import Svg, {
   Path,
   Stop,
 } from 'react-native-svg';
-import { colors, font } from '@/theme';
+import { font, useColors } from '@/theme';
 
 interface Props {
   values: number[]; // chronological CI scores (oldest -> newest)
@@ -18,6 +18,7 @@ interface Props {
 
 // CI trend over time with a smooth gradient area fill.
 export default function TrendChart({ values, width = 320, height = 150 }: Props) {
+  const colors = useColors();
   if (values.length < 2) {
     return (
       <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>

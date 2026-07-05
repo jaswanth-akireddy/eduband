@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
 import { Level } from '@/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing, useColors } from '@/theme';
 import { saveProfile, clearRole } from '@/storage/store';
 import Button from '@/components/Button';
 
@@ -25,6 +25,8 @@ const LEVELS: { id: Level; label: string }[] = [
 ];
 
 export default function OnboardingScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [name, setName] = useState('');
   const [schoolCode, setSchoolCode] = useState('');
   const [level, setLevel] = useState<Level>('high');
@@ -116,7 +118,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { padding: spacing.lg, flexGrow: 1 },
   backLink: {
@@ -179,4 +181,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.md,
   },
-});
+}));

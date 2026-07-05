@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radius, shadow, spacing } from '@/theme';
+import { View, ViewStyle } from 'react-native';
+import { makeStyles, radius, shadow, spacing } from '@/theme';
 
 interface Props {
   children: React.ReactNode;
@@ -11,6 +11,7 @@ interface Props {
 
 // Airbnb-style card: clean white, hairline border, soft low-contrast shadow.
 export default function Card({ children, style, variant = 'glass' }: Props) {
+  const styles = useStyles();
   return (
     <View
       style={[
@@ -25,7 +26,7 @@ export default function Card({ children, style, variant = 'glass' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   base: {
     borderRadius: radius.lg,
     padding: spacing.lg,
@@ -40,4 +41,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     borderColor: colors.line,
   },
-});
+}));

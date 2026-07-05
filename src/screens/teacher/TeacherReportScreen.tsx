@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, radius, scoreColor, spacing, useColors } from '@/theme';
 import { teachingSessionById } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -12,6 +12,8 @@ import Button from '@/components/Button';
 type Props = NativeStackScreenProps<RootStackParamList, 'TeacherReport'>;
 
 export default function TeacherReportScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const session = teachingSessionById(route.params.sessionId);
   if (!session) {
     return (
@@ -98,7 +100,7 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: font.h2, fontWeight: '800', color: colors.text, marginTop: spacing.sm, letterSpacing: -0.5 },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
@@ -115,4 +117,4 @@ const styles = StyleSheet.create({
   barTrack: { flex: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: radius.pill, marginHorizontal: spacing.sm, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: radius.pill },
   pillarScore: { width: 28, textAlign: 'right', fontWeight: '800', fontSize: font.small },
-});
+}));

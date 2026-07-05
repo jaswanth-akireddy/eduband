@@ -16,7 +16,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { Role } from '@/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing, useColors } from '@/theme';
 import {
   authConfigured,
   signInWithEmail,
@@ -38,6 +38,8 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 export default function AuthScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const role = route.params.role;
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -187,6 +189,8 @@ function Field({
   secure?: boolean;
   keyboardType?: 'email-address' | 'default';
 }) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <View style={{ marginTop: spacing.md }}>
       <Text style={styles.label}>{label}</Text>
@@ -205,7 +209,7 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   back: { color: colors.textMuted, fontSize: font.small, fontWeight: '600', marginTop: spacing.sm },
   title: { fontSize: font.h2, fontWeight: '700', color: colors.textMuted, marginTop: spacing.lg },
   roleTitle: { fontSize: font.hero, fontWeight: '800', color: colors.text, letterSpacing: -0.5, marginBottom: spacing.lg },
@@ -236,4 +240,4 @@ const styles = StyleSheet.create({
   googleG: { color: '#4285F4', fontWeight: '800', fontSize: font.h3, marginRight: spacing.sm },
   googleText: { color: '#1F1F1F', fontWeight: '700', fontSize: font.body },
   switch: { color: colors.primary, textAlign: 'center', marginTop: spacing.lg, fontSize: font.small, fontWeight: '600' },
-});
+}));

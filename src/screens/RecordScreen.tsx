@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing, useColors } from '@/theme';
 import { taskById } from '@/data/tasks';
 import { getConsentCache, hasValidConsent } from '@/storage/store';
 import {
@@ -21,6 +21,8 @@ import { notifyWarning, tapLight, tapMedium } from '@/services/haptics';
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
 export default function RecordScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const task = taskById(route.params.taskId);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -217,7 +219,7 @@ function formatTime(sec: number): string {
   return `${m}:${s}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { flex: 1, padding: spacing.lg, justifyContent: 'space-between' },
   promptBox: {
@@ -279,4 +281,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-});
+}));

@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, spacing } from '@/theme';
+import { font, makeStyles, spacing, useColors } from '@/theme';
 import {
   AppSettings,
   clearRole,
@@ -26,6 +26,8 @@ type Props = CompositeScreenProps<
 >;
 
 export default function PrivacyScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [settings, setSettings] = useState<AppSettings>({ retainRawAudio: false });
   const [consent, setConsent] = useState<ConsentRecord | null>(null);
 
@@ -159,6 +161,7 @@ export default function PrivacyScreen({ navigation }: Props) {
 }
 
 function Promise({ text }: { text: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.promiseRow}>
       <Text style={styles.check}>✓</Text>
@@ -167,7 +170,7 @@ function Promise({ text }: { text: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text },
   sub: {
@@ -192,4 +195,4 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     lineHeight: 16,
   },
-});
+}));

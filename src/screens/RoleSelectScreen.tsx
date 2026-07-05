@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { Role } from '@/types';
-import { colors, font, radius, shadow, spacing } from '@/theme';
+import { colors, font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
 import { saveRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 
@@ -52,6 +52,8 @@ const ROLES: RoleCard[] = [
 ];
 
 export default function RoleSelectScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   async function pick(role: Role) {
     await saveRole(role);
     // Go through auth (real login when Supabase is configured; the Auth screen
@@ -112,7 +114,7 @@ export default function RoleSelectScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: { padding: spacing.lg, flexGrow: 1 },
   logoWrap: { alignItems: 'center', marginTop: spacing.xl },
   logo: {
@@ -174,4 +176,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.md,
   },
-});
+}));

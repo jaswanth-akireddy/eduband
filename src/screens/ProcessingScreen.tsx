@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, spacing } from '@/theme';
+import { font, makeStyles, spacing, useColors } from '@/theme';
 import { transcribe } from '@/analysis/stt';
 import { analyze } from '@/analysis/pipeline';
 import { taskById } from '@/data/tasks';
@@ -23,6 +23,8 @@ const STEPS = [
 ];
 
 export default function ProcessingScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function ProcessingScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -156,4 +158,4 @@ const styles = StyleSheet.create({
     fontSize: font.tiny,
     marginTop: spacing.sm,
   },
-});
+}));

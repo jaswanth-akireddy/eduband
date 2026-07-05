@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, spacing } from '@/theme';
+import { font, makeStyles, spacing, useColors } from '@/theme';
 import { clearRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -14,6 +14,8 @@ import ScoreGauge from '@/components/ScoreGauge';
 type Props = NativeStackScreenProps<RootStackParamList, 'ParentPortal'>;
 
 export default function ParentPortalScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   async function switchRole() {
     await clearRole();
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
@@ -60,7 +62,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
   indexTitle: { fontSize: font.h3, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
@@ -69,4 +71,4 @@ const styles = StyleSheet.create({
   item: { fontSize: font.body, color: colors.textMuted, lineHeight: 24 },
   tip: { fontSize: font.body, color: colors.text, lineHeight: 28, fontWeight: '500' },
   privacy: { color: colors.textFaint, fontSize: font.tiny, textAlign: 'center', marginTop: spacing.md },
-});
+}));

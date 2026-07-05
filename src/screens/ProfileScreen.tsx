@@ -12,7 +12,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, makeStyles, radius, spacing, useTheme } from '@/theme';
+import type { ThemeScheme } from '@/theme';
 import { clearRole, deleteAllData, exportData, getProfile, getRole } from '@/storage/store';
 import { getCurrentUser, signOut, authConfigured } from '@/services/auth';
 import { Role, StudentProfile } from '@/types';
@@ -28,7 +29,15 @@ const levelLabel: Record<string, string> = {
   college: 'College',
 };
 
+const THEME_OPTIONS: { id: ThemeScheme; label: string }[] = [
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'system', label: 'System' },
+];
+
 export default function ProfileScreen({ navigation }: Props) {
+  const { scheme, setScheme, palette: colors } = useTheme();
+  const styles = useStyles();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<Role | null>(null);
@@ -105,6 +114,30 @@ export default function ProfileScreen({ navigation }: Props) {
         </View>
       </Card>
 
+      {/* Appearance */}
+      <Text style={styles.sectionLabel}>Appearance</Text>
+      <Card style={styles.group}>
+        <View style={styles.appearanceRow}>
+          <Text style={styles.rowLabel}>Theme</Text>
+          <View style={styles.segment}>
+            {THEME_OPTIONS.map((opt) => {
+              const active = scheme === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => setScheme(opt.id)}
+                  style={[styles.segmentItem, active && styles.segmentItemActive]}
+                >
+                  <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </Card>
+
       {/* Account actions */}
       <Text style={styles.sectionLabel}>Account</Text>
       <Card style={styles.group}>
@@ -152,6 +185,7 @@ export default function ProfileScreen({ navigation }: Props) {
 }
 
 function Row({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -167,6 +201,7 @@ function Row({ label, hint, onPress }: { label: string; hint: string; onPress: (
 }
 
 function Chip({ text }: { text: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.chip}>
       <Text style={styles.chipText}>{text}</Text>
@@ -175,13 +210,33 @@ function Chip({ text }: { text: string }) {
 }
 
 function Divider() {
+  const styles = useStyles();
   return <View style={styles.divider} />;
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
+  appearanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  segmentItem: { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.pill },
+  segmentItemActive: { backgroundColor: colors.primary },
+  segmentText: { fontSize: font.small, fontWeight: '700', color: colors.textMuted },
+  segmentTextActive: { color: colors.white },
   identity: { alignItems: 'center', paddingVertical: spacing.xl },
   avatarWrap: { marginBottom: spacing.md },
   name: { fontSize: font.h2, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
@@ -235,4 +290,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     lineHeight: 16,
   },
-});
+}));

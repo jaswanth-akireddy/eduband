@@ -6,12 +6,13 @@
 import { Platform } from 'react-native';
 import { PillarId } from '@/types';
 
-export const colors = {
+// Light palette (the app's original look — unchanged).
+export const lightColors = {
   // Airy white canvas (kept as a near-flat "gradient" so the backdrop stays calm)
   bg: '#FFFFFF',
   bg2: '#F7F7F7',
   bg3: '#FAFAFA',
-  bgGradient: ['#FFFFFF', '#FFFFFF', '#F7F7F7'] as const,
+  bgGradient: ['#FFFFFF', '#FFFFFF', '#F7F7F7'] as [string, string, string],
 
   surface: '#FFFFFF',
   surfaceAlt: '#F7F7F7',
@@ -21,9 +22,8 @@ export const colors = {
   glassBorder: '#EBEBEB',
 
   text: '#222222', // Hof
-  // NOTE: legacy screens use *OnDark tokens as their primary/secondary page text
-  // (this app's canvas was formerly all-dark). On the new light canvas they map
-  // to the same dark ink. Text on coloured fills uses `white` instead.
+  // NOTE: legacy screens use *OnDark tokens as their primary/secondary page text.
+  // They map to the same ink as `text` per theme.
   textOnDark: '#222222',
   textMuted: '#717171', // Foggy
   textFaint: '#B0B0B0',
@@ -37,29 +37,69 @@ export const colors = {
   pink: '#E61E4D',
   primary: '#FF385C', // Rausch
   primaryDark: '#BD1E59',
-  iridescent: ['#FF385C', '#E61E4D', '#BD1E59'] as const,
+  iridescent: ['#FF385C', '#E61E4D', '#BD1E59'] as [string, string, string],
   accent: '#008489',
 
-  // Score bands (kind, never shaming) — tuned for a light canvas
+  // Score bands (kind, never shaming)
   good: '#008A05',
-  goodGradient: ['#1DBE6E', '#008A05'] as const,
+  goodGradient: ['#1DBE6E', '#008A05'] as [string, string],
   mid: '#FFB400',
-  midGradient: ['#FFB400', '#FF9500'] as const,
+  midGradient: ['#FFB400', '#FF9500'] as [string, string],
   low: '#E0245E',
-  lowGradient: ['#FF385C', '#C13515'] as const,
+  lowGradient: ['#FF385C', '#C13515'] as [string, string],
 
   white: '#FFFFFF',
   glow: 'rgba(255, 56, 92, 0.28)',
   shadow: 'rgba(0, 0, 0, 0.12)',
 
-  // ---- Back-compat aliases (older screens map onto the light theme) ----
+  // ---- Back-compat aliases ----
   card: '#FFFFFF',
   cardMuted: '#F7F7F7',
   borderDark: '#DDDDDD',
   surfaceGlass: '#FFFFFF',
   surfaceGlassBorder: '#EBEBEB',
-  primaryGradient: ['#FF385C', '#E61E4D', '#BD1E59'] as const,
+  primaryGradient: ['#FF385C', '#E61E4D', '#BD1E59'] as [string, string, string],
 };
+
+export type Palette = typeof lightColors;
+
+// Dark palette — surfaces/text/lines flip; brand + score accents stay vivid so
+// they read on a dark canvas. Spread guarantees every key exists.
+export const darkColors: Palette = {
+  ...lightColors,
+  bg: '#0E0F12',
+  bg2: '#16171B',
+  bg3: '#121317',
+  bgGradient: ['#0E0F12', '#0E0F12', '#16171B'],
+
+  surface: '#191A1F',
+  surfaceAlt: '#212229',
+  glass: '#191A1F',
+  glassStrong: '#1E2027',
+  glassBorder: '#2C2F36',
+
+  text: '#F2F3F5',
+  textOnDark: '#F2F3F5',
+  textMuted: '#A3A8B0',
+  textFaint: '#6C7178',
+  textMutedOnDark: '#A3A8B0',
+  line: '#2C2F36',
+  border: '#3A3E45',
+
+  white: '#FFFFFF',
+  shadow: 'rgba(0, 0, 0, 0.5)',
+
+  card: '#191A1F',
+  cardMuted: '#24262D',
+  borderDark: '#3A3E45',
+  surfaceGlass: '#191A1F',
+  surfaceGlassBorder: '#2C2F36',
+};
+
+// Live default palette used by static `import { colors }` and by the score/
+// gradient helpers below. Points at light; screens read the active palette via
+// useTheme()/makeStyles so they re-render on toggle.
+export const colors: Palette = lightColors;
 
 // Each pillar keeps its own identity colour (reads cleanly on white).
 export const pillarColors: Record<PillarId, readonly [string, string]> = {
@@ -156,3 +196,12 @@ export function scoreBand(score: number): string {
   if (score >= 40) return 'Emerging';
   return 'Early';
 }
+
+// Theme context / hooks / makeStyles (re-exported so everything is `@/theme`).
+export {
+  ThemeProvider,
+  useTheme,
+  useColors,
+  makeStyles,
+  type ThemeScheme,
+} from './ThemeProvider';

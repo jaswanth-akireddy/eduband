@@ -7,7 +7,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, pillarColor, scoreBand, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, pillarColor, scoreBand, scoreColor, spacing } from '@/theme';
 import { getProfile, getSessions } from '@/storage/store';
 import { currentUserId, subscribeSessions } from '@/services/sessionsSync';
 import { PillarId, Session, StudentProfile } from '@/types';
@@ -25,6 +25,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function HomeScreen({ navigation }: Props) {
+  const styles = useStyles();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -197,7 +198,7 @@ function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -282,4 +283,4 @@ const styles = StyleSheet.create({
   recentTask: { color: colors.textOnDark, fontSize: font.body, fontWeight: '600' },
   recentDate: { color: colors.textMutedOnDark, fontSize: font.small, marginTop: 2 },
   recentScore: { color: colors.accent, fontSize: font.h2, fontWeight: '800', marginLeft: spacing.md },
-});
+}));
