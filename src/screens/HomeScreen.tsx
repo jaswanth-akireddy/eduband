@@ -7,15 +7,15 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, pillarColor, spacing } from '@/theme';
+import { colors, font, pillarColor, scoreBand, scoreColor, spacing } from '@/theme';
 import { getProfile, getSessions } from '@/storage/store';
 import { currentUserId, subscribeSessions } from '@/services/sessionsSync';
-import { Session, StudentProfile } from '@/types';
+import { PillarId, Session, StudentProfile } from '@/types';
 import { pillarDef } from '@/analysis/framework';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
-import ScoreGauge from '@/components/ScoreGauge';
+import MetricRing from '@/components/MetricRing';
 import Avatar from '@/components/Avatar';
 import Skeleton from '@/components/Skeleton';
 
@@ -83,15 +83,30 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
 
           {!loaded ? (
-            <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-              <Skeleton width={172} height={172} round />
-              <Skeleton width={'55%'} height={14} style={{ marginTop: spacing.lg }} />
-              <Skeleton width={'80%'} height={44} style={{ marginTop: spacing.lg }} />
+            <Card variant="glass" style={{ paddingVertical: spacing.lg }}>
+              <Skeleton width={'55%'} height={16} />
+              <View style={styles.ringsRow}>
+                <Skeleton width={92} height={92} round />
+                <Skeleton width={92} height={92} round />
+                <Skeleton width={92} height={92} round />
+              </View>
             </Card>
           ) : latest ? (
-            <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-              <Text style={styles.cardTitle}>Communication Index</Text>
-              <ScoreGauge score={latest.analysis.ci} size={248} />
+            <Card variant="glass" style={{ paddingVertical: spacing.lg }}>
+              <View style={styles.ciHeader}>
+                <Text style={styles.cardTitle}>Communication Index</Text>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={[styles.ciNumber, { color: scoreColor(latest.analysis.ci) }]}>
+                    {latest.analysis.ci}
+                  </Text>
+                  <Text style={styles.ciBand}>{scoreBand(latest.analysis.ci).toUpperCase()}</Text>
+                </View>
+              </View>
+              <View style={styles.ringsRow}>
+                <MetricRing value={pillarScore(latest, 'fluency')} label="Fluency" />
+                <MetricRing value={pillarScore(latest, 'clarity')} label="Clarity" />
+                <MetricRing value={pillarScore(latest, 'confidence')} label="Confidence" />
+              </View>
               <Text style={styles.trendText}>{trendText(sessions)}</Text>
               {latest.analysis.focusAreas[0] && (
                 <View
@@ -166,6 +181,10 @@ export default function HomeScreen({ navigation }: Props) {
   );
 }
 
+function pillarScore(session: Session, id: PillarId): number {
+  return session.analysis.pillars.find((p) => p.id === id)?.score ?? 0;
+}
+
 function trendText(sessions: Session[]): string {
   if (sessions.length < 2) return 'Record again to start tracking your growth.';
   const diff = sessions[0].analysis.ci - sessions[1].analysis.ci;
@@ -203,7 +222,25 @@ const styles = StyleSheet.create({
     color: colors.textOnDark,
     fontSize: font.h3,
     fontWeight: '800',
-    marginBottom: spacing.sm,
+  },
+  ciHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: spacing.xs,
+  },
+  ciNumber: { fontSize: font.h1, fontWeight: '800', letterSpacing: -0.5, lineHeight: 34 },
+  ciBand: {
+    color: colors.textMutedOnDark,
+    fontSize: font.tiny,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  ringsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    marginBottom: spacing.xs,
   },
   trendText: {
     color: colors.textMutedOnDark,
@@ -214,6 +251,7 @@ const styles = StyleSheet.create({
   focusChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: 7,
     borderRadius: 999,
