@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TeacherTabsParamList } from '@/navigation/types';
-import { colors, font, radius, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, radius, scoreColor, spacing, useColors } from '@/theme';
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -18,6 +18,8 @@ type Props = CompositeScreenProps<
 >;
 
 export default function TeacherHomeScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const sessions = DEMO_TEACHING_SESSIONS;
 
   return (
@@ -94,6 +96,7 @@ export default function TeacherHomeScreen({ navigation }: Props) {
 }
 
 function Row({ label, value, tint }: { label: string; value: string; tint: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.statRow}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -109,7 +112,7 @@ function timeAgo(ms: number): string {
   return `${Math.round(h / 24)}d ago`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   hi: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.sm },
   attachCard: { borderStyle: 'dashed' as const, marginTop: spacing.md },
@@ -125,4 +128,4 @@ const styles = StyleSheet.create({
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
   statLabel: { fontSize: font.body, color: colors.text },
   statValue: { fontSize: font.h3, fontWeight: '800' },
-});
+}));

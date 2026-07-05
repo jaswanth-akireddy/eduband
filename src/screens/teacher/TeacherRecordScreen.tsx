@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing } from '@/theme';
 import {
   cancelRecording,
   requestMicPermission,
@@ -19,6 +19,7 @@ import { logError, logEvent } from '@/services/logger';
 type Props = NativeStackScreenProps<RootStackParamList, 'TeacherRecord'>;
 
 export default function TeacherRecordScreen({ navigation }: Props) {
+  const styles = useStyles();
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [starting, setStarting] = useState(false);
@@ -115,7 +116,7 @@ function formatTime(sec: number): string {
   return `${m}:${s}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: { flex: 1, padding: spacing.lg, justifyContent: 'space-between' },
   tip: {
     backgroundColor: colors.glass,
@@ -138,4 +139,4 @@ const styles = StyleSheet.create({
   stopIcon: { width: 36, height: 36, borderRadius: 6, backgroundColor: colors.white },
   recLabel: { color: colors.textMuted, fontSize: font.body, marginTop: spacing.lg },
   note: { color: colors.textMuted, fontSize: font.small, textAlign: 'center' },
-});
+}));

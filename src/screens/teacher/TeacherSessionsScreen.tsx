@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TeacherTabsParamList } from '@/navigation/types';
-import { colors, font, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, scoreColor, spacing } from '@/theme';
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -17,6 +17,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function TeacherSessionsScreen({ navigation }: Props) {
+  const styles = useStyles();
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -42,10 +43,10 @@ export default function TeacherSessionsScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
   row: { flexDirection: 'row', alignItems: 'center' },
   rowTitle: { fontSize: font.body, fontWeight: '600', color: colors.text },
   rowMeta: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   score: { fontSize: font.h2, fontWeight: '800', marginLeft: spacing.md },
-});
+}));

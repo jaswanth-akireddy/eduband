@@ -12,7 +12,7 @@ import {
   TabsParamList,
   TeacherTabsParamList,
 } from '@/navigation/types';
-import { colors, fontFamily } from '@/theme';
+import { fontFamily, ThemeProvider, useColors, useTheme } from '@/theme';
 import { getProfile, getRole, hasValidConsent } from '@/storage/store';
 import { loadCredentials } from '@/config';
 
@@ -55,21 +55,16 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabsParamList>();
 const TeacherTab = createBottomTabNavigator<TeacherTabsParamList>();
 
-const navTheme = {
-  ...DefaultTheme,
-  colors: { ...DefaultTheme.colors, background: colors.bg },
-};
-
-const tabBarStyle = {
-  height: 66,
-  paddingBottom: 10,
-  paddingTop: 8,
-  backgroundColor: colors.surface,
-  borderTopColor: colors.glassBorder,
-  borderTopWidth: 1,
-};
-
 function StudentTabs() {
+  const colors = useColors();
+  const tabBarStyle = {
+    height: 66,
+    paddingBottom: 10,
+    paddingTop: 8,
+    backgroundColor: colors.surface,
+    borderTopColor: colors.glassBorder,
+    borderTopWidth: 1,
+  };
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -93,6 +88,15 @@ function StudentTabs() {
 }
 
 function TeacherTabs() {
+  const colors = useColors();
+  const tabBarStyle = {
+    height: 66,
+    paddingBottom: 10,
+    paddingTop: 8,
+    backgroundColor: colors.surface,
+    borderTopColor: colors.glassBorder,
+    borderTopWidth: 1,
+  };
   return (
     <TeacherTab.Navigator
       screenOptions={({ route }) => ({
@@ -114,6 +118,15 @@ function TeacherTabs() {
 }
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { isDark, palette: colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('RoleSelect');
 
@@ -148,9 +161,21 @@ export default function App() {
     return <LaunchScreen />;
   }
 
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.bg,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.line,
+      primary: colors.primary,
+    },
+  };
+
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <NavigationContainer theme={navTheme}>
         <Stack.Navigator
           initialRouteName={initialRoute}

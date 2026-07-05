@@ -10,7 +10,7 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { PillarScore } from '@/types';
-import { colors, pillarColor } from '@/theme';
+import { pillarColor, useColors } from '@/theme';
 
 interface Props {
   pillars: PillarScore[];
@@ -19,6 +19,7 @@ interface Props {
 
 // Five-pillar radar with a gradient fill and colour-coded vertices.
 export default function PillarRadar({ pillars, size = 280 }: Props) {
+  const colors = useColors();
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - 46;

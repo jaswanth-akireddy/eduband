@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing, useColors } from '@/theme';
 import { getProfile, saveConsent } from '@/storage/store';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
@@ -21,6 +21,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Consent'>;
 
 // Section 8: verifiable parental/guardian consent before any recording.
 export default function ConsentScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const [guardian, setGuardian] = useState('');
   const [relationship, setRelationship] = useState('Parent');
   const [agreed, setAgreed] = useState(false);
@@ -113,6 +115,7 @@ export default function ConsentScreen({ navigation }: Props) {
 }
 
 function Bullet({ text }: { text: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.bulletRow}>
       <View style={styles.dot} />
@@ -121,7 +124,7 @@ function Bullet({ text }: { text: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { padding: spacing.lg },
   title: { fontSize: font.h2, fontWeight: '800', color: colors.text },
@@ -196,4 +199,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     lineHeight: 16,
   },
-});
+}));

@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, font, fontFamily, radius, shadow, spacing, weight } from '@/theme';
+import { font, fontFamily, makeStyles, radius, shadow, spacing, useColors, weight } from '@/theme';
 
 interface Props {
   title: string;
@@ -31,6 +31,8 @@ export default function Button({
 }: Props) {
   const isPrimary = variant === 'primary';
   const isGhost = variant === 'ghost';
+  const colors = useColors();
+  const styles = useStyles();
 
   const content = (
     <>
@@ -96,7 +98,7 @@ export default function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   shadowWrap: { borderRadius: radius.md },
   base: {
     minHeight: 48,
@@ -127,4 +129,4 @@ const styles = StyleSheet.create({
   textPrimary: { color: colors.white },
   textSecondary: { color: colors.text },
   textGhost: { color: colors.primary },
-});
+}));

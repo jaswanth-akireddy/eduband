@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, scoreColor } from '@/theme';
+import { makeStyles, scoreColor, useColors } from '@/theme';
 
 interface Props {
   value: number; // 0-100
@@ -12,6 +12,8 @@ interface Props {
 // A single Whoop-style full-circle progress ring: value in the centre, coloured
 // by score band, with a label beneath. Composed in a row for the dashboard.
 export default function MetricRing({ value, label, size = 96 }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const v = Math.max(0, Math.min(100, Math.round(value)));
   const stroke = 9;
   const r = (100 - stroke) / 2;
@@ -45,8 +47,8 @@ export default function MetricRing({ value, label, size = 96 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  item: { alignItems: 'center' },
+const useStyles = makeStyles((colors) => ({
+  item: { alignItems: 'center' as const },
   center: { alignItems: 'center', justifyContent: 'center' },
   value: {
     color: colors.text,

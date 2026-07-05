@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
-import { colors, scoreBand, scoreColor } from '@/theme';
+import { scoreBand, scoreColor, useColors } from '@/theme';
 
 interface Props {
   score: number; // 0-100
@@ -31,6 +31,7 @@ function arc(fromDeg: number, toDeg: number): string {
 }
 
 export default function ScoreGauge({ score, size = 240 }: Props) {
+  const colors = useColors();
   const clamped = Math.max(0, Math.min(100, score));
   const color = scoreColor(clamped);
   const band = scoreBand(clamped);

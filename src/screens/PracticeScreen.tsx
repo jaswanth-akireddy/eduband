@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { colors, font, radius, spacing } from '@/theme';
+import { font, makeStyles, radius, spacing } from '@/theme';
 import { getProfile } from '@/storage/store';
 import { Task } from '@/types';
 import { tasksForLevel, TASKS } from '@/data/tasks';
@@ -20,6 +20,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function PracticeScreen({ navigation }: Props) {
+  const styles = useStyles();
   const [tasks, setTasks] = useState<Task[]>(TASKS);
 
   useFocusEffect(
@@ -74,7 +75,7 @@ export default function PracticeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   title: { fontSize: font.h1, fontWeight: '800', color: colors.text },
   sub: {
@@ -113,4 +114,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-});
+}));

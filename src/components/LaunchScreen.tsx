@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { colors, font, spacing } from '@/theme';
+import { Animated, Easing, Text, View } from 'react-native';
+import { font, makeStyles, spacing } from '@/theme';
 
 // Branded app-open launcher. Shown while the app boots (loads credentials,
 // restores session, decides the first screen) so opening EduBand feels
 // intentional instead of flashing straight onto a raw screen.
 export default function LaunchScreen() {
+  const styles = useStyles();
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(16)).current;
   const pulse = useRef(new Animated.Value(0.85)).current;
@@ -68,7 +69,7 @@ export default function LaunchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   root: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -111,4 +112,4 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.textFaint,
   },
-});
+}));
