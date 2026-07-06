@@ -33,8 +33,11 @@ export default function ApiKeysScreen({ navigation }: Props) {
     apiBase: '',
     sttProvider: 'deepgram',
     deepgramKey: '',
+    llmProvider: 'claude',
     anthropicKey: '',
     anthropicModel: 'claude-3-5-sonnet-latest',
+    geminiKey: '',
+    geminiModel: 'gemini-1.5-flash',
   });
   const [activeMode, setActiveMode] = useState('');
 
