@@ -62,4 +62,4 @@ const useStyles = makeStyles((colors) => ({
     fontSize: 12,
     fontWeight: '700',
   },
-});
+}));
