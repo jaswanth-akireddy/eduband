@@ -185,6 +185,11 @@ function AppContent() {
             headerTitleStyle: { fontWeight: '800' },
             headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.bg },
+            // Consistent, smooth horizontal slide on both platforms (instead of
+            // the abrupt OS default), with an edge-swipe back gesture.
+            animation: 'slide_from_right',
+            animationDuration: 280,
+            gestureEnabled: true,
           }}
         >
           <Stack.Screen name="RoleSelect" component={RoleSelectScreen} options={{ headerShown: false }} />
@@ -194,14 +199,34 @@ function AppContent() {
           <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Consent" component={ConsentScreen} options={{ title: 'Consent' }} />
           <Stack.Screen name="Tabs" component={StudentTabs} options={{ headerShown: false }} />
-          <Stack.Screen name="Record" component={RecordScreen} options={{ title: 'Record' }} />
-          <Stack.Screen name="Processing" component={ProcessingScreen} options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="Report" component={ReportScreen} options={{ title: 'Your Report' }} />
+          <Stack.Screen
+            name="Record"
+            component={RecordScreen}
+            options={{ title: 'Record', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="Processing"
+            component={ProcessingScreen}
+            options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }}
+          />
+          <Stack.Screen
+            name="Report"
+            component={ReportScreen}
+            options={{ title: 'Your Report', animation: 'fade' }}
+          />
 
           {/* Teacher */}
           <Stack.Screen name="TeacherTabs" component={TeacherTabs} options={{ headerShown: false }} />
-          <Stack.Screen name="TeacherRecord" component={TeacherRecordScreen} options={{ title: 'Record Teaching' }} />
-          <Stack.Screen name="TeacherReport" component={TeacherReportScreen} options={{ title: 'Teaching Report' }} />
+          <Stack.Screen
+            name="TeacherRecord"
+            component={TeacherRecordScreen}
+            options={{ title: 'Record Teaching', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="TeacherReport"
+            component={TeacherReportScreen}
+            options={{ title: 'Teaching Report', animation: 'fade' }}
+          />
 
           {/* Parent */}
           <Stack.Screen name="ParentPortal" component={ParentPortalScreen} options={{ headerShown: false }} />
