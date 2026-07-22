@@ -172,7 +172,10 @@ async function callBackend(
     },
     body: JSON.stringify({ transcript, metrics, level }),
   });
-  if (!res.ok) throw new Error(`Backend scoring error ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Backend scoring error ${res.status}${body ? `: ${body.slice(0, 300)}` : ''}`);
+  }
   return (await res.json()) as LlmScoringResult;
 }
 

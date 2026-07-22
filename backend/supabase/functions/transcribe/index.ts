@@ -8,34 +8,36 @@ const PROVIDER = Deno.env.get('STT_PROVIDER') ?? 'deepgram';
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
-  if (req.method !== 'POST') return errorResponse('Method not allowed', 405, origin);
-
-  const auth = await getAuthedUser(req);
-  if (!auth) return errorResponse('Unauthorized', 401, origin);
-  if (!rateLimit(`stt:${auth.userId}`, 20, 60_000))
-    return errorResponse('Rate limit exceeded', 429, origin);
-
-  let form: FormData;
+  // Outer catch: any uncaught error (auth, boot, provider) returns a JSON 502
+  // with the real message instead of a platform-level 5xx (e.g. 540/546) that
+  // the client can't diagnose.
   try {
-    form = await req.formData();
-  } catch {
-    return errorResponse('Expected multipart/form-data', 400, origin);
-  }
-  const audio = form.get('audio');
-  if (!(audio instanceof File)) return errorResponse('Missing audio file', 400, origin);
-  if (audio.size === 0 || audio.size > 25 * 1024 * 1024)
-    return errorResponse('Audio must be 1 byte–25 MB', 400, origin);
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
+    if (req.method !== 'POST') return errorResponse('Method not allowed', 405, origin);
 
-  try {
+    const auth = await getAuthedUser(req);
+    if (!auth) return errorResponse('Unauthorized', 401, origin);
+    if (!rateLimit(`stt:${auth.userId}`, 20, 60_000))
+      return errorResponse('Rate limit exceeded', 429, origin);
+
+    let form: FormData;
+    try {
+      form = await req.formData();
+    } catch {
+      return errorResponse('Expected multipart/form-data', 400, origin);
+    }
+    const audio = form.get('audio');
+    if (!(audio instanceof File)) return errorResponse('Missing audio file', 400, origin);
+    if (audio.size === 0 || audio.size > 25 * 1024 * 1024)
+      return errorResponse('Audio must be 1 byte–25 MB', 400, origin);
+
     const transcript =
-      PROVIDER === 'assemblyai'
-        ? await assemblyai(audio)
-        : await deepgram(audio);
+      PROVIDER === 'assemblyai' ? await assemblyai(audio) : await deepgram(audio);
     return json(transcript, 200, origin);
   } catch (e) {
     console.error('STT error', e);
-    return errorResponse('Transcription failed', 502, origin);
+    const msg = e instanceof Error ? e.message : 'Transcription failed';
+    return errorResponse(`Transcription failed: ${msg}`, 502, origin);
   }
 });
 

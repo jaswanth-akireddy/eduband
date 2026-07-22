@@ -140,12 +140,20 @@ async function backendTranscribe(uri: string, durationSec: number): Promise<Tran
   } as unknown as Blob);
   form.append('durationSec', String(durationSec));
   const token = await getAccessToken();
+  if (!token) {
+    // No JWT = the function will 401. Surface it clearly rather than as a
+    // mysterious auth failure — real STT requires being signed in.
+    throw new Error('Not signed in — backend STT needs a logged-in session');
+  }
   const res = await fetch(`${config.apiBase}/transcribe`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: { Authorization: `Bearer ${token}` },
     body: form,
   });
-  if (!res.ok) throw new Error(`Backend STT error ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Backend STT error ${res.status}${body ? `: ${body.slice(0, 300)}` : ''}`);
+  }
   return (await res.json()) as Transcript;
 }
 
