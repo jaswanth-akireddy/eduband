@@ -83,31 +83,32 @@ ${JSON.stringify({ transcript: text, metrics: body.metrics ?? {}, level: body.le
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
-  if (req.method !== 'POST') return errorResponse('Method not allowed', 405, origin);
-
-  const auth = await getAuthedUser(req);
-  if (!auth) return errorResponse('Unauthorized', 401, origin);
-  if (!rateLimit(`score:${auth.userId}`, 30, 60_000))
-    return errorResponse('Rate limit exceeded', 429, origin);
-
-  let body: Record<string, unknown>;
+  // Outer catch: any uncaught error returns a JSON 502 with the real message
+  // instead of a platform-level 5xx (e.g. 540/546) the client can't diagnose.
   try {
-    body = await req.json();
-  } catch {
-    return errorResponse('Invalid JSON', 400, origin);
-  }
-  const transcript = body?.transcript as { text?: string } | undefined;
-  const text = transcript?.text;
-  if (typeof text !== 'string' || text.length === 0)
-    return errorResponse('Missing transcript text', 400, origin);
-  if (text.length > 20000) return errorResponse('Transcript too long', 413, origin);
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
+    if (req.method !== 'POST') return errorResponse('Method not allowed', 405, origin);
 
-  try {
-    const result = LLM_PROVIDER === 'claude' 
-      ? await callClaude(text, body)
-      : await callGemini(text, body);
-    
+    const auth = await getAuthedUser(req);
+    if (!auth) return errorResponse('Unauthorized', 401, origin);
+    if (!rateLimit(`score:${auth.userId}`, 30, 60_000))
+      return errorResponse('Rate limit exceeded', 429, origin);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse('Invalid JSON', 400, origin);
+    }
+    const transcript = body?.transcript as { text?: string } | undefined;
+    const text = transcript?.text;
+    if (typeof text !== 'string' || text.length === 0)
+      return errorResponse('Missing transcript text', 400, origin);
+    if (text.length > 20000) return errorResponse('Transcript too long', 413, origin);
+
+    const result =
+      LLM_PROVIDER === 'claude' ? await callClaude(text, body) : await callGemini(text, body);
+
     const raw = result.text;
     const match = raw.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(match ? match[0] : raw);
@@ -123,6 +124,7 @@ Deno.serve(async (req) => {
     return json({ pillars, modelVersion: result.model }, 200, origin);
   } catch (e) {
     console.error('Scoring error', e);
-    return errorResponse('Scoring failed', 502, origin);
+    const msg = e instanceof Error ? e.message : 'Scoring failed';
+    return errorResponse(`Scoring failed: ${msg}`, 502, origin);
   }
 });
