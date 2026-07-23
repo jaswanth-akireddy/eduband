@@ -57,6 +57,23 @@ async function uriToBlob(uri: string): Promise<Blob> {
   return res.blob();
 }
 
+// Derive a filename + MIME type from the local recording uri, without reading
+// the file (fetch(file://…) throws "Network request failed" on Android).
+function fileMeta(uri: string): { name: string; type: string } {
+  const ext = (uri.split('?')[0].split('.').pop() || 'm4a').toLowerCase();
+  const type =
+    ext === 'wav'
+      ? 'audio/wav'
+      : ext === 'mp4'
+        ? 'audio/mp4'
+        : ext === '3gp' || ext === '3gpp'
+          ? 'audio/3gpp'
+          : ext === 'caf'
+            ? 'audio/x-caf'
+            : 'audio/m4a';
+  return { name: `session.${ext}`, type };
+}
+
 // ---------------------------------------------------------------------------
 // DEEPGRAM (direct, client-side — test only)
 // ---------------------------------------------------------------------------
@@ -130,14 +147,12 @@ async function assemblyTranscribe(uri: string): Promise<Transcript> {
 // BACKEND PROXY (recommended — keys live server-side)
 // ---------------------------------------------------------------------------
 async function backendTranscribe(uri: string, durationSec: number): Promise<Transcript> {
-  const audio = await uriToBlob(uri);
   const form = new FormData();
-  // RN FormData accepts a file descriptor object (not in DOM typings).
-  form.append('audio', {
-    uri,
-    name: 'session.m4a',
-    type: audio.type || 'audio/m4a',
-  } as unknown as Blob);
+  // RN reads the file straight from the uri when building the multipart body —
+  // don't pre-fetch it (fetch(file://…) fails on Android). Descriptor object is
+  // not in DOM typings, hence the cast.
+  const { name, type } = fileMeta(uri);
+  form.append('audio', { uri, name, type } as unknown as Blob);
   form.append('durationSec', String(durationSec));
   const token = await getAccessToken();
   if (!token) {
