@@ -172,7 +172,7 @@ function Promise({ text }: { text: string }) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text },
   sub: {
     fontSize: font.body,
     color: colors.textMuted,
@@ -186,7 +186,7 @@ const useStyles = makeStyles((colors) => ({
   warn: { color: colors.low, fontWeight: '700', marginTop: spacing.sm },
   rowBetween: { flexDirection: 'row', alignItems: 'center' },
   promiseRow: { flexDirection: 'row', marginTop: spacing.sm },
-  check: { color: colors.good, fontWeight: '800', marginRight: spacing.sm },
+  check: { color: colors.good, fontWeight: '700', marginRight: spacing.sm },
   promiseText: { flex: 1, color: colors.text, fontSize: font.small, lineHeight: 20 },
   legal: {
     color: colors.textMuted,

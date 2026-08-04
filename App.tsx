@@ -72,7 +72,7 @@ function StudentTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', letterSpacing: 0.1 },
         tabBarIcon: ({ color, size }) => (
           <TabBarIcon route={route.name} color={color} size={size} />
         ),
@@ -104,7 +104,7 @@ function TeacherTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', letterSpacing: 0.1 },
         tabBarIcon: ({ color, size }) => (
           <TabBarIcon route={route.name} color={color} size={size} />
         ),
@@ -180,9 +180,9 @@ function AppContent() {
         <Stack.Navigator
           initialRouteName={initialRoute}
           screenOptions={{
-            headerStyle: { backgroundColor: colors.surface },
-            headerTintColor: colors.textOnDark,
-            headerTitleStyle: { fontWeight: '800' },
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerTitleStyle: { fontWeight: '600', fontSize: 17 },
             headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.bg },
             // Consistent, smooth horizontal slide on both platforms (instead of

@@ -11,7 +11,7 @@ export default function TabBarIcon({
   color: string;
   size: number;
 }) {
-  const sw = 2;
+  const sw = 1.8;
   switch (route) {
     case 'Home':
     case 'TeacherHome':

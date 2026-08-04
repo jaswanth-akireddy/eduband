@@ -77,7 +77,7 @@ export default function PracticeScreen({ navigation }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text },
   sub: {
     fontSize: font.body,
     color: colors.textMuted,

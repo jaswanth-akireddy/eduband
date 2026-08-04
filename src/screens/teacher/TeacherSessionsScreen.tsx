@@ -44,9 +44,9 @@ export default function TeacherSessionsScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
   row: { flexDirection: 'row', alignItems: 'center' },
   rowTitle: { fontSize: font.body, fontWeight: '600', color: colors.text },
   rowMeta: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
-  score: { fontSize: font.h2, fontWeight: '800', marginLeft: spacing.md },
+  score: { fontSize: font.h2, fontWeight: '700', marginLeft: spacing.md },
 }));

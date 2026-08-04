@@ -1,15 +1,16 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { makeStyles, radius, shadow, spacing } from '@/theme';
 
 interface Props {
   children: React.ReactNode;
   style?: ViewStyle;
-  // 'glass' (default) = elevated white card; 'solid' = flat off-white surface.
+  // 'glass' (default) = elevated surface card; 'solid' = flat tonal surface.
   variant?: 'glass' | 'solid';
 }
 
-// Airbnb-style card: clean white, hairline border, soft low-contrast shadow.
+// Grouped-canvas card: borderless white surface floating on a whisper of
+// shadow (Apple Health register). A hairline keeps edges crisp on low-DPI.
 export default function Card({ children, style, variant = 'glass' }: Props) {
   const styles = useStyles();
   return (
@@ -30,15 +31,15 @@ const useStyles = makeStyles((colors) => ({
   base: {
     borderRadius: radius.lg,
     padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
+    marginBottom: 12,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   elevated: {
     backgroundColor: colors.surface,
-    borderColor: colors.line,
+    borderColor: colors.glassBorder,
   },
   solid: {
     backgroundColor: colors.surfaceAlt,
-    borderColor: colors.line,
+    borderColor: 'transparent',
   },
 }));

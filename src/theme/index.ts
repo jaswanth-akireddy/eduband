@@ -1,114 +1,117 @@
-// EduBand design system — "Belo" (Airbnb-inspired).
-// Clean white canvas, Foggy-grey secondary text, hairline borders, soft shadows,
-// and a single confident Rausch-coral accent. Typeset in San Francisco (SF Pro)
-// at a tighter, premium scale. Light, calm, trustworthy.
+// EduBand design system — "Belo 2.0".
+// Grouped-canvas layout (Apple Health / iOS Settings pattern): a soft neutral
+// background with borderless white cards floating on a whisper of shadow.
+// Typography carries the hierarchy (700 titles → 600 headlines → 400 body →
+// muted captions); colour is used with restraint — neutrals dominate and the
+// Rausch coral appears only on primary actions and active states.
 
 import { Platform } from 'react-native';
 import { PillarId } from '@/types';
 
-// Light palette (the app's original look — unchanged).
+// Light palette (default).
 export const lightColors = {
-  // Airy white canvas (kept as a near-flat "gradient" so the backdrop stays calm)
-  bg: '#FFFFFF',
-  bg2: '#F7F7F7',
-  bg3: '#FAFAFA',
-  bgGradient: ['#FFFFFF', '#FFFFFF', '#F7F7F7'] as [string, string, string],
+  // Grouped canvas: soft cool gray so white cards read as elevated surfaces.
+  bg: '#F6F6F8',
+  bg2: '#FFFFFF',
+  bg3: '#FAFAFB',
+  bgGradient: ['#F7F7F9', '#F6F6F8', '#F2F2F6'] as [string, string, string],
 
   surface: '#FFFFFF',
-  surfaceAlt: '#F7F7F7',
-  // "glass" now reads as a clean white card — separated by border + soft shadow.
+  surfaceAlt: '#F1F1F4', // tonal fill (secondary buttons, inputs, tracks)
   glass: '#FFFFFF',
   glassStrong: '#FFFFFF',
-  glassBorder: '#EBEBEB',
+  glassBorder: 'rgba(17, 17, 26, 0.04)', // near-invisible hairline
 
-  text: '#222222', // Hof
-  // NOTE: legacy screens use *OnDark tokens as their primary/secondary page text.
-  // They map to the same ink as `text` per theme.
-  textOnDark: '#222222',
-  textMuted: '#717171', // Foggy
-  textFaint: '#B0B0B0',
-  textMutedOnDark: '#717171',
-  line: '#EBEBEB',
-  border: '#DDDDDD',
+  text: '#1B1B1F', // near-black ink, slightly cool
+  // Legacy alias: older screens use *OnDark tokens as their page text.
+  textOnDark: '#1B1B1F',
+  textMuted: '#71717A', // secondary label
+  textFaint: '#AFAFB8', // tertiary label
+  textMutedOnDark: '#71717A',
+  line: 'rgba(17, 17, 26, 0.06)', // hairline separators
+  border: '#E4E4E9',
 
-  // Rausch — the one bold accent
-  blue: '#008489', // Babu (Airbnb teal) — kept for any cool-tone UI
+  // Rausch — the one bold accent. Used sparingly.
+  blue: '#0E8488',
   violet: '#FF385C',
-  pink: '#E61E4D',
-  primary: '#FF385C', // Rausch
-  primaryDark: '#BD1E59',
-  iridescent: ['#FF385C', '#E61E4D', '#BD1E59'] as [string, string, string],
-  accent: '#008489',
+  pink: '#F1244D',
+  primary: '#FF385C',
+  primaryDark: '#E0284C',
+  iridescent: ['#FF455F', '#FF385C', '#F1244D'] as [string, string, string],
+  accent: '#0E8488',
 
-  // Score bands (kind, never shaming)
-  good: '#008A05',
-  goodGradient: ['#1DBE6E', '#008A05'] as [string, string],
-  mid: '#FFB400',
-  midGradient: ['#FFB400', '#FF9500'] as [string, string],
-  low: '#E0245E',
-  lowGradient: ['#FF385C', '#C13515'] as [string, string],
+  // Score bands — calm, legible semantics (never neon, never shaming).
+  good: '#188A4C',
+  goodGradient: ['#2BB673', '#188A4C'] as [string, string],
+  mid: '#E8930C',
+  midGradient: ['#F5A623', '#E8930C'] as [string, string],
+  low: '#E5484D',
+  lowGradient: ['#F2555A', '#D93036'] as [string, string],
 
   white: '#FFFFFF',
-  glow: 'rgba(255, 56, 92, 0.28)',
-  shadow: 'rgba(0, 0, 0, 0.12)',
+  glow: 'rgba(255, 56, 92, 0.22)',
+  shadow: 'rgba(17, 17, 26, 0.08)',
 
   // ---- Back-compat aliases ----
   card: '#FFFFFF',
-  cardMuted: '#F7F7F7',
-  borderDark: '#DDDDDD',
+  cardMuted: '#F1F1F4',
+  borderDark: '#E4E4E9',
   surfaceGlass: '#FFFFFF',
-  surfaceGlassBorder: '#EBEBEB',
-  primaryGradient: ['#FF385C', '#E61E4D', '#BD1E59'] as [string, string, string],
+  surfaceGlassBorder: 'rgba(17, 17, 26, 0.04)',
+  primaryGradient: ['#FF455F', '#FF385C', '#F1244D'] as [string, string, string],
 };
 
 export type Palette = typeof lightColors;
 
-// Dark palette — surfaces/text/lines flip; brand + score accents stay vivid so
-// they read on a dark canvas. Spread guarantees every key exists.
+// Dark palette — iOS-dark grouped: true-dark canvas, raised graphite cards.
+// Brand + score accents stay vivid; surfaces/text/lines flip.
 export const darkColors: Palette = {
   ...lightColors,
-  bg: '#0E0F12',
-  bg2: '#16171B',
-  bg3: '#121317',
-  bgGradient: ['#0E0F12', '#0E0F12', '#16171B'],
+  bg: '#0C0C10',
+  bg2: '#141419',
+  bg3: '#101015',
+  bgGradient: ['#0C0C10', '#0C0C10', '#101016'],
 
-  surface: '#191A1F',
-  surfaceAlt: '#212229',
-  glass: '#191A1F',
-  glassStrong: '#1E2027',
-  glassBorder: '#2C2F36',
+  surface: '#1A1A20',
+  surfaceAlt: '#232329',
+  glass: '#1A1A20',
+  glassStrong: '#1F1F26',
+  glassBorder: 'rgba(255, 255, 255, 0.06)',
 
-  text: '#F2F3F5',
-  textOnDark: '#F2F3F5',
-  textMuted: '#A3A8B0',
-  textFaint: '#6C7178',
-  textMutedOnDark: '#A3A8B0',
-  line: '#2C2F36',
-  border: '#3A3E45',
+  text: '#F4F4F6',
+  textOnDark: '#F4F4F6',
+  textMuted: '#9E9EA7',
+  textFaint: '#5E5E67',
+  textMutedOnDark: '#9E9EA7',
+  line: 'rgba(255, 255, 255, 0.07)',
+  border: '#33333B',
+
+  good: '#34C77B',
+  mid: '#F5A623',
+  low: '#F2555A',
 
   white: '#FFFFFF',
-  shadow: 'rgba(0, 0, 0, 0.5)',
+  shadow: 'rgba(0, 0, 0, 0.55)',
 
-  card: '#191A1F',
-  cardMuted: '#24262D',
-  borderDark: '#3A3E45',
-  surfaceGlass: '#191A1F',
-  surfaceGlassBorder: '#2C2F36',
+  card: '#1A1A20',
+  cardMuted: '#26262E',
+  borderDark: '#33333B',
+  surfaceGlass: '#1A1A20',
+  surfaceGlassBorder: 'rgba(255, 255, 255, 0.06)',
 };
 
-// Live default palette used by static `import { colors }` and by the score/
-// gradient helpers below. Points at light; screens read the active palette via
+// Live default palette for static imports; screens read the active palette via
 // useTheme()/makeStyles so they re-render on toggle.
 export const colors: Palette = lightColors;
 
-// Each pillar keeps its own identity colour (reads cleanly on white).
+// Each pillar keeps its own identity colour (reads cleanly on light and dark).
 export const pillarColors: Record<PillarId, readonly [string, string]> = {
-  fluency: ['#FF385C', '#BD1E59'],
-  clarity: ['#008489', '#006C70'],
-  language: ['#5B5BD6', '#4A3FC4'],
-  structure: ['#FFB400', '#FF9500'],
-  confidence: ['#E61E4D', '#C13515'],
-  interaction: ['#008A05', '#0A7C2F'],
+  fluency: ['#FF385C', '#E0284C'],
+  clarity: ['#0E8488', '#0B6B6E'],
+  language: ['#6366F1', '#4F46E5'],
+  structure: ['#E8930C', '#C97B06'],
+  confidence: ['#E11D48', '#BE123C'],
+  interaction: ['#188A4C', '#136F3D'],
 };
 
 export function pillarColor(id: PillarId): string {
@@ -125,15 +128,14 @@ export const spacing = {
 };
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 28,
   pill: 999,
 };
 
-// San Francisco everywhere. On native iOS this resolves to the system SF face;
-// on web we name the SF Pro stack explicitly and fall back gracefully.
+// San Francisco on iOS; Roboto on Android; SF stack on web.
 export const fontFamily = Platform.select({
   ios: 'System',
   android: 'sans-serif',
@@ -141,15 +143,16 @@ export const fontFamily = Platform.select({
     '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 }) as string;
 
-// Slightly smaller, premium scale.
+// Apple-HIG-adjacent scale. One hero/large-title per screen; everything else
+// steps down decisively so hierarchy comes from type, not from boldness.
 export const font = {
-  hero: 32,
-  h1: 26,
-  h2: 21,
-  h3: 17,
+  hero: 34, // large title
+  h1: 28, // screen title
+  h2: 22, // card/section hero
+  h3: 17, // headline
   body: 15,
-  small: 13,
-  tiny: 11,
+  small: 13, // footnote / secondary
+  tiny: 11, // caption / overline
 };
 
 export const weight = {
@@ -160,20 +163,20 @@ export const weight = {
 };
 
 export const shadow = {
-  // Airbnb's signature soft, low-contrast card shadow.
+  // Barely-there elevation: cards float, they don't pop.
   card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowColor: '#111116',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
+    elevation: 2,
   },
   glow: {
     shadowColor: colors.glow,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 1,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowRadius: 14,
+    elevation: 4,
   },
 };
 

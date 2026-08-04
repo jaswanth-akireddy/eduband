@@ -71,7 +71,7 @@ export default function LanguageLabScreen({ navigation }: Props) {
 
           {/* Privacy */}
           <Card>
-            <Text style={styles.privacyHead}>🔒 How your privacy is protected</Text>
+            <Text style={styles.privacyHead}>How your privacy is protected</Text>
             {[
               'Records only when YOU speak (voice match)',
               "Other people's speech discarded on the device",
@@ -103,7 +103,7 @@ export default function LanguageLabScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.small, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
   deviceRow: { flexDirection: 'row', alignItems: 'center' },
   deviceIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: spacing.md },
@@ -114,10 +114,10 @@ const useStyles = makeStyles((colors) => ({
   syncText: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   todayRow: { flexDirection: 'row', alignItems: 'center' },
   todayLabel: { fontSize: font.small, color: colors.textMuted, fontWeight: '700' },
-  todayBig: { fontSize: 32, fontWeight: '800', color: colors.text, marginTop: 4, letterSpacing: -1 },
+  todayBig: { fontSize: 32, fontWeight: '700', color: colors.text, marginTop: 4, letterSpacing: -1 },
   todaySub: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   deltaCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.blue + '2E', alignItems: 'center', justifyContent: 'center' },
-  deltaText: { color: colors.blue, fontSize: font.h3, fontWeight: '800' },
+  deltaText: { color: colors.blue, fontSize: font.h3, fontWeight: '700' },
   privacyHead: { fontSize: font.body, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   privacyItem: { fontSize: font.small, color: colors.textMuted, lineHeight: 24 },
   phase: { color: colors.textFaint, fontSize: font.tiny, textAlign: 'center', marginTop: spacing.md },

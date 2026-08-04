@@ -2,13 +2,12 @@ import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   Text,
   View,
   ViewStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { font, fontFamily, makeStyles, radius, shadow, spacing, useColors, weight } from '@/theme';
+import { fontFamily, makeStyles, radius, useColors, weight } from '@/theme';
+import Icon, { IconName } from '@/components/Icon';
 
 interface Props {
   title: string;
@@ -17,9 +16,11 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
-  icon?: string; // optional leading glyph/emoji
+  icon?: IconName; // optional leading icon from the in-house set
 }
 
+// One confident primary (solid Rausch), a quiet tonal secondary, and a text
+// ghost. 52pt targets, gentle press scale — no gradients, no glow.
 export default function Button({
   title,
   onPress,
@@ -29,56 +30,16 @@ export default function Button({
   style,
   icon,
 }: Props) {
-  const isPrimary = variant === 'primary';
-  const isGhost = variant === 'ghost';
   const colors = useColors();
   const styles = useStyles();
+  const isPrimary = variant === 'primary';
+  const isGhost = variant === 'ghost';
 
-  const content = (
-    <>
-      {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.white : colors.primary} />
-      ) : (
-        <View style={styles.row}>
-          {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-          <Text
-            style={[
-              styles.text,
-              isPrimary ? styles.textPrimary : styles.textSecondary,
-              isGhost && styles.textGhost,
-            ]}
-          >
-            {title}
-          </Text>
-        </View>
-      )}
-    </>
-  );
-
-  if (isPrimary) {
-    return (
-      <Pressable
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={({ pressed }) => [
-          styles.shadowWrap,
-          shadow.glow,
-          (disabled || loading) && styles.disabled,
-          pressed && styles.pressed,
-          style,
-        ]}
-      >
-        <LinearGradient
-          colors={colors.iridescent}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.base}
-        >
-          {content}
-        </LinearGradient>
-      </Pressable>
-    );
-  }
+  const contentColor = isPrimary
+    ? colors.white
+    : isGhost
+      ? colors.primary
+      : colors.text;
 
   return (
     <Pressable
@@ -86,6 +47,7 @@ export default function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.base,
+        isPrimary && styles.primary,
         variant === 'secondary' && styles.secondary,
         isGhost && styles.ghost,
         (disabled || loading) && styles.disabled,
@@ -93,40 +55,41 @@ export default function Button({
         style,
       ]}
     >
-      {content}
+      {loading ? (
+        <ActivityIndicator color={contentColor} />
+      ) : (
+        <View style={styles.row}>
+          {icon ? (
+            <View style={styles.iconWrap}>
+              <Icon name={icon} size={19} color={contentColor} strokeWidth={2} />
+            </View>
+          ) : null}
+          <Text style={[styles.text, { color: contentColor }]}>{title}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  shadowWrap: { borderRadius: radius.md },
   base: {
-    minHeight: 48,
+    minHeight: 52,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    flexDirection: 'row',
-    overflow: 'hidden',
+    paddingHorizontal: 24,
   },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  icon: { fontSize: font.body, marginRight: spacing.sm },
-  // Airbnb's bordered secondary: white fill, near-black hairline border.
-  secondary: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.text,
-  },
+  primary: { backgroundColor: colors.primary },
+  secondary: { backgroundColor: colors.surfaceAlt },
   ghost: { backgroundColor: 'transparent', minHeight: 44 },
-  disabled: { opacity: 0.4 },
-  pressed: { opacity: 0.92, transform: [{ scale: 0.985 }] },
+  disabled: { opacity: 0.35 },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  iconWrap: { marginRight: 8 },
   text: {
     fontFamily,
-    fontSize: font.body,
+    fontSize: 16,
     fontWeight: weight.semibold,
-    letterSpacing: 0.1,
+    letterSpacing: -0.2,
   },
-  textPrimary: { color: colors.white },
-  textSecondary: { color: colors.text },
-  textGhost: { color: colors.primary },
 }));

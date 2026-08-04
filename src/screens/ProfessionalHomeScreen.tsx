@@ -60,7 +60,7 @@ export default function ProfessionalHomeScreen({ navigation }: Props) {
 
           <Button
             title="Start a practice session"
-            icon="🎙️"
+            icon="mic"
             onPress={() => Alert.alert('Practice', 'Recording flow (demo).')}
           />
           <Button title="Switch role" variant="ghost" onPress={switchRole} style={{ marginTop: spacing.xs }} />
@@ -71,7 +71,7 @@ export default function ProfessionalHomeScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  hi: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2 },
   section: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginTop: spacing.lg, marginBottom: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: spacing.md },
@@ -89,5 +89,5 @@ const useStyles = makeStyles((colors) => ({
   latest: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.lg },
   latestTitle: { fontSize: font.body, fontWeight: '700', color: colors.text },
   latestSub: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
-  latestScore: { fontSize: font.h1, fontWeight: '800', marginLeft: spacing.md },
+  latestScore: { fontSize: font.h1, fontWeight: '700', marginLeft: spacing.md },
 }));

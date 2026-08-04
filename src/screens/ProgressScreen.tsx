@@ -127,7 +127,7 @@ function formatDate(ms: number): string {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
   cardLabel: {
     fontSize: font.small,
     color: colors.textMuted,
@@ -143,7 +143,7 @@ const useStyles = makeStyles((colors) => ({
     paddingTop: spacing.md,
   },
   stat: { alignItems: 'center' },
-  statValue: { fontSize: font.h2, fontWeight: '800', color: colors.text },
+  statValue: { fontSize: font.h2, fontWeight: '700', color: colors.text },
   statLabel: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   subhead: {
     fontSize: font.h3,
@@ -163,5 +163,5 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  histScoreText: { fontSize: font.h3, fontWeight: '800' },
+  histScoreText: { fontSize: font.h3, fontWeight: '700' },
 }));

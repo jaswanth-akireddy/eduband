@@ -80,8 +80,8 @@ export default function SwitchRoleScreen({
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
-  name: { fontSize: font.h2, fontWeight: '800', color: colors.text },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, marginBottom: spacing.md, letterSpacing: -0.5 },
+  name: { fontSize: font.h2, fontWeight: '700', color: colors.text },
   role: { fontSize: font.body, color: colors.textMuted, marginTop: 4 },
   note: { color: colors.textFaint, fontSize: font.tiny, textAlign: 'center', marginTop: spacing.md },
   cancel: {

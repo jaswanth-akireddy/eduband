@@ -127,7 +127,7 @@ function Bullet({ text }: { text: string }) {
 const useStyles = makeStyles((colors) => ({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { padding: spacing.lg },
-  title: { fontSize: font.h2, fontWeight: '800', color: colors.text },
+  title: { fontSize: font.h2, fontWeight: '700', color: colors.text },
   subtitle: {
     fontSize: font.body,
     color: colors.textMuted,
