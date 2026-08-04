@@ -194,7 +194,7 @@ function Field({
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.small, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.md, lineHeight: 20 },
   modePill: {
     alignSelf: 'flex-start',
@@ -207,7 +207,7 @@ const useStyles = makeStyles((colors) => ({
     marginBottom: spacing.md,
   },
   modeText: { color: colors.accent, fontSize: font.tiny, fontWeight: '700' },
-  warnHead: { color: colors.mid, fontWeight: '800', fontSize: font.body, marginBottom: 4 },
+  warnHead: { color: colors.mid, fontWeight: '700', fontSize: font.body, marginBottom: 4 },
   warnText: { color: colors.textMuted, fontSize: font.small, lineHeight: 20 },
   cardHead: { fontSize: font.h3, fontWeight: '700', color: colors.text },
   hint: { fontSize: font.small, color: colors.textMuted, marginTop: 4, lineHeight: 18 },

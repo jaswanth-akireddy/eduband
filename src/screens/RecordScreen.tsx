@@ -14,6 +14,7 @@ import {
   stopRecording,
 } from '@/services/recorder';
 import Button from '@/components/Button';
+import Icon from '@/components/Icon';
 import RecordingWave from '@/components/RecordingWave';
 import { logError, logEvent, logInfo, logWarn, withTimeout } from '@/services/logger';
 import { notifyWarning, tapLight, tapMedium } from '@/services/haptics';
@@ -144,7 +145,7 @@ export default function RecordScreen({ route, navigation }: Props) {
       <View style={styles.container}>
         <View style={styles.promptBox}>
           <Text style={styles.promptLabel}>
-            {task ? 'Your task' : 'Free speaking'}
+            {task ? 'YOUR TASK' : 'FREE SPEAKING'}
           </Text>
           <Text style={styles.prompt}>
             {task
@@ -152,10 +153,13 @@ export default function RecordScreen({ route, navigation }: Props) {
               : 'Speak about anything you like for a minute or two.'}
           </Text>
           {task && (
-            <Text style={styles.hint}>
-              Aim for about {Math.round(task.suggestedSeconds / 60)} minute
-              {task.suggestedSeconds >= 120 ? 's' : ''}.
-            </Text>
+            <View style={styles.hintRow}>
+              <Icon name="clock" size={13} color={colors.textMuted} />
+              <Text style={styles.hint}>
+                About {Math.round(task.suggestedSeconds / 60)} minute
+                {task.suggestedSeconds >= 120 ? 's' : ''}
+              </Text>
+            </View>
           )}
         </View>
 
@@ -200,10 +204,13 @@ export default function RecordScreen({ route, navigation }: Props) {
           {recording ? (
             <Button title="Stop & analyse" onPress={onStop} />
           ) : (
-            <Text style={styles.privacyNote}>
-              🔒 We only record while you hold a session. Raw audio is deleted
-              after analysis by default.
-            </Text>
+            <View style={styles.privacyRow}>
+              <Icon name="lock" size={14} color={colors.textFaint} />
+              <Text style={styles.privacyNote}>
+                Recording only while you hold a session. Raw audio is deleted
+                after analysis.
+              </Text>
+            </View>
           )}
         </View>
       </View>
@@ -222,63 +229,79 @@ function formatTime(sec: number): string {
 const useStyles = makeStyles((colors) => ({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { flex: 1, padding: spacing.lg, justifyContent: 'space-between' },
-  promptBox: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.borderDark,
-  },
+  promptBox: { paddingTop: spacing.md, paddingHorizontal: spacing.xs },
   promptLabel: {
-    color: colors.textMutedOnDark,
-    fontSize: font.small,
-    fontWeight: '700',
+    color: colors.textMuted,
+    fontSize: font.tiny,
+    fontWeight: '600',
+    letterSpacing: 1,
     marginBottom: spacing.sm,
   },
-  prompt: { color: colors.textOnDark, fontSize: font.h2, lineHeight: 32, fontWeight: '600' },
-  hint: { color: colors.textMutedOnDark, marginTop: spacing.md, fontSize: font.small },
+  prompt: {
+    color: colors.text,
+    fontSize: font.h2,
+    lineHeight: 30,
+    fontWeight: '600',
+    letterSpacing: -0.4,
+  },
+  hintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: spacing.md,
+  },
+  hint: { color: colors.textMuted, fontSize: font.small },
   center: { alignItems: 'center' },
   timer: {
-    color: colors.textOnDark,
-    fontSize: 52,
-    fontWeight: '300',
+    color: colors.text,
+    fontSize: 56,
+    fontWeight: '200',
     fontVariant: ['tabular-nums'],
+    letterSpacing: 1,
     marginBottom: spacing.md,
   },
   waveSlot: { height: 40, justifyContent: 'center', marginBottom: spacing.md },
-  btnWrap: { width: 120, height: 120, alignItems: 'center', justifyContent: 'center' },
+  btnWrap: { width: 112, height: 112, alignItems: 'center', justifyContent: 'center' },
   pulse: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     backgroundColor: colors.low,
   },
+  // Voice-memos register: a quiet outer ring with a red core that morphs from
+  // circle (idle) to rounded square (recording).
   recBtn: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.primary,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 3,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 6,
   },
-  recBtnActive: { backgroundColor: colors.low },
-  micDot: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.white },
-  stopIcon: { width: 36, height: 36, borderRadius: 6, backgroundColor: colors.white },
+  recBtnActive: { borderColor: colors.low + '55' },
+  micDot: { width: 68, height: 68, borderRadius: 34, backgroundColor: colors.primary },
+  stopIcon: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.low },
   recLabel: {
-    color: colors.textMutedOnDark,
-    fontSize: font.body,
+    color: colors.textMuted,
+    fontSize: font.small,
+    fontWeight: '500',
     marginTop: spacing.lg,
   },
+  privacyRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.lg,
+  },
   privacyNote: {
-    color: colors.textMutedOnDark,
-    fontSize: font.small,
+    color: colors.textFaint,
+    fontSize: font.tiny,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 16,
+    flexShrink: 1,
   },
 }));

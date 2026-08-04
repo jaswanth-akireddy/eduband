@@ -31,7 +31,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
           <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
             <Text style={styles.indexTitle}>Communication Index</Text>
             <ScoreGauge score={76} size={240} />
-            <Text style={styles.goodNews}>Improving steadily this term 🎉</Text>
+            <Text style={styles.goodNews}>Improving steadily this term</Text>
           </Card>
 
           <Card>
@@ -52,7 +52,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
           </Card>
 
           <Text style={styles.privacy}>
-            🔒 Read-only · no audio access · consent on file
+            Read-only · no audio access · consent on file
           </Text>
 
           <Button title="Switch role" variant="ghost" onPress={switchRole} />
@@ -63,9 +63,9 @@ export default function ParentPortalScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
-  indexTitle: { fontSize: font.h3, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
+  indexTitle: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   goodNews: { color: colors.good, fontSize: font.small, fontWeight: '700', marginTop: spacing.md },
   head: { fontSize: font.h3, fontWeight: '700', marginBottom: spacing.sm },
   item: { fontSize: font.body, color: colors.textMuted, lineHeight: 24 },

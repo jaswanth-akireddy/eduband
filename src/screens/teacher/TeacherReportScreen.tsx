@@ -102,12 +102,12 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: font.h2, fontWeight: '800', color: colors.text, marginTop: spacing.sm, letterSpacing: -0.5 },
+  title: { fontSize: font.h2, fontWeight: '700', color: colors.text, marginTop: spacing.sm, letterSpacing: -0.5 },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
   scoreRow: { flexDirection: 'row', gap: spacing.md },
   scoreCard: { flex: 1 },
-  scoreLabel: { fontSize: font.tiny, fontWeight: '800', color: colors.textMuted, letterSpacing: 0.5 },
-  bigScore: { fontSize: 40, fontWeight: '800', marginTop: 4, letterSpacing: -1 },
+  scoreLabel: { fontSize: font.tiny, fontWeight: '700', color: colors.textMuted, letterSpacing: 0.5 },
+  bigScore: { fontSize: 40, fontWeight: '700', marginTop: 4, letterSpacing: -1 },
   scoreHint: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   cardHead: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   item: { fontSize: font.small, color: colors.textMuted, lineHeight: 24 },
@@ -116,5 +116,5 @@ const useStyles = makeStyles((colors) => ({
   pillarName: { width: 80, fontSize: font.small, color: colors.text, fontWeight: '600' },
   barTrack: { flex: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: radius.pill, marginHorizontal: spacing.sm, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: radius.pill },
-  pillarScore: { width: 28, textAlign: 'right', fontWeight: '800', fontSize: font.small },
+  pillarScore: { width: 28, textAlign: 'right', fontWeight: '700', fontSize: font.small },
 }));

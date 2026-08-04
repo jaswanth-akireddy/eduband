@@ -1,18 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, Share, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, makeStyles, radius, spacing, useTheme } from '@/theme';
+import { font, makeStyles, radius, spacing, useTheme, weight } from '@/theme';
 import type { ThemeScheme } from '@/theme';
 import { clearRole, deleteAllData, exportData, getProfile, getRole } from '@/storage/store';
 import { getCurrentUser, signOut, authConfigured } from '@/services/auth';
@@ -20,6 +12,7 @@ import { Role, StudentProfile } from '@/types';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Avatar from '@/components/Avatar';
+import ListRow, { RowDivider } from '@/components/ListRow';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -32,7 +25,7 @@ const levelLabel: Record<string, string> = {
 const THEME_OPTIONS: { id: ThemeScheme; label: string }[] = [
   { id: 'light', label: 'Light' },
   { id: 'dark', label: 'Dark' },
-  { id: 'system', label: 'System' },
+  { id: 'system', label: 'Auto' },
 ];
 
 export default function ProfileScreen({ navigation }: Props) {
@@ -66,6 +59,13 @@ export default function ProfileScreen({ navigation }: Props) {
   );
 
   const name = profile?.name?.trim() || 'EduBand user';
+  const detail = [
+    role ? cap(role) : null,
+    profile?.level ? levelLabel[profile.level] ?? profile.level : null,
+    profile?.schoolCode ?? null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   async function onLogout() {
     if (!confirmingLogout) {
@@ -75,7 +75,6 @@ export default function ProfileScreen({ navigation }: Props) {
     setBusy(true);
     // End the Supabase session, then wipe this device's local account data so the
     // next person to sign in never sees the previous account's profile/sessions.
-    // (Cross-device, per-account persistence belongs in Supabase — see notes.)
     await signOut();
     await deleteAllData();
     navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
@@ -94,28 +93,23 @@ export default function ProfileScreen({ navigation }: Props) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+      contentContainerStyle={{ padding: 20, paddingBottom: spacing.xxl }}
+      showsVerticalScrollIndicator={false}
     >
       {/* Identity */}
-      <Card style={styles.identity}>
-        <View style={styles.avatarWrap}>
-          <Avatar seed={name} size={80} />
-        </View>
+      <View style={styles.identity}>
+        <Avatar seed={name} size={72} />
         <Text style={styles.name}>{name}</Text>
         {email ? (
           <Text style={styles.email}>{email}</Text>
         ) : (
-          <Text style={styles.emailFaint}>Local demo · not signed in</Text>
+          <Text style={styles.emailFaint}>Not signed in · local demo</Text>
         )}
-        <View style={styles.chips}>
-          {role ? <Chip text={cap(role)} /> : null}
-          {profile?.level ? <Chip text={levelLabel[profile.level] ?? profile.level} /> : null}
-          {profile?.schoolCode ? <Chip text={profile.schoolCode} /> : null}
-        </View>
-      </Card>
+        {detail ? <Text style={styles.detail}>{detail}</Text> : null}
+      </View>
 
       {/* Appearance */}
-      <Text style={styles.sectionLabel}>Appearance</Text>
+      <Text style={styles.sectionLabel}>APPEARANCE</Text>
       <Card style={styles.group}>
         <View style={styles.appearanceRow}>
           <Text style={styles.rowLabel}>Theme</Text>
@@ -138,20 +132,40 @@ export default function ProfileScreen({ navigation }: Props) {
         </View>
       </Card>
 
-      {/* Account actions */}
-      <Text style={styles.sectionLabel}>Account</Text>
+      {/* Account */}
+      <Text style={styles.sectionLabel}>ACCOUNT</Text>
       <Card style={styles.group}>
-        <Row label="Switch role" hint="Back to the welcome screen" onPress={onSwitchRole} />
-        <Divider />
-        <Row
+        <ListRow
+          icon="swap"
+          tint="#6366F1"
+          label="Switch role"
+          hint="Back to the welcome screen"
+          onPress={onSwitchRole}
+        />
+        <RowDivider />
+        <ListRow
+          icon="shield"
+          tint={colors.accent}
           label="Privacy & data"
           hint="Consent, retention, export, delete"
           onPress={() => navigation.navigate('Tabs', { screen: 'Privacy' })}
         />
-        <Divider />
-        <Row label="API keys (testing)" hint="Configure services on-device" onPress={() => navigation.navigate('ApiKeys')} />
-        <Divider />
-        <Row label="Export my data" hint="Download a JSON copy" onPress={onExport} />
+        <RowDivider />
+        <ListRow
+          icon="key"
+          tint="#E8930C"
+          label="API keys"
+          hint="Configure services on-device"
+          onPress={() => navigation.navigate('ApiKeys')}
+        />
+        <RowDivider />
+        <ListRow
+          icon="share"
+          tint={colors.good}
+          label="Export my data"
+          hint="Download a JSON copy"
+          onPress={onExport}
+        />
       </Card>
 
       {/* Sign out */}
@@ -184,103 +198,66 @@ export default function ProfileScreen({ navigation }: Props) {
   );
 }
 
-function Row({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) {
-  const styles = useStyles();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowHint}>{hint}</Text>
-      </View>
-      <Text style={styles.chevron}>›</Text>
-    </Pressable>
-  );
-}
-
-function Chip({ text }: { text: string }) {
-  const styles = useStyles();
-  return (
-    <View style={styles.chip}>
-      <Text style={styles.chipText}>{text}</Text>
-    </View>
-  );
-}
-
-function Divider() {
-  const styles = useStyles();
-  return <View style={styles.divider} />;
-}
-
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
+  identity: { alignItems: 'center', paddingVertical: spacing.lg },
+  name: {
+    fontSize: font.h2,
+    fontWeight: weight.semibold,
+    color: colors.text,
+    letterSpacing: -0.4,
+    marginTop: spacing.md,
+  },
+  email: { fontSize: font.small, color: colors.textMuted, marginTop: 3 },
+  emailFaint: { fontSize: font.small, color: colors.textFaint, marginTop: 3 },
+  detail: { fontSize: font.small, color: colors.textMuted, marginTop: 6 },
+
+  sectionLabel: {
+    fontSize: font.tiny,
+    fontWeight: weight.semibold,
+    color: colors.textMuted,
+    letterSpacing: 1,
+    marginTop: spacing.lg,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  group: { padding: 0, overflow: 'hidden' },
+
   appearanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  rowLabel: {
+    fontSize: font.body,
+    fontWeight: weight.medium,
+    color: colors.text,
+    letterSpacing: -0.1,
   },
   segment: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.pill,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: colors.line,
+    borderRadius: radius.sm,
+    padding: 2,
   },
-  segmentItem: { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.pill },
-  segmentItemActive: { backgroundColor: colors.primary },
-  segmentText: { fontSize: font.small, fontWeight: '700', color: colors.textMuted },
-  segmentTextActive: { color: colors.white },
-  identity: { alignItems: 'center', paddingVertical: spacing.xl },
-  avatarWrap: { marginBottom: spacing.md },
-  name: { fontSize: font.h2, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
-  email: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
-  emailFaint: { fontSize: font.small, color: colors.textFaint, marginTop: 2 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.md },
-  chip: {
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
+  segmentItem: {
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: colors.line,
+    borderRadius: radius.sm - 2,
   },
-  chipText: { fontSize: font.tiny, fontWeight: '600', color: colors.textMuted },
-
-  sectionLabel: {
-    fontSize: font.tiny,
-    fontWeight: '700',
-    color: colors.textFaint,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  group: { padding: 0, overflow: 'hidden' },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  rowPressed: { backgroundColor: colors.surfaceAlt },
-  rowLabel: { fontSize: font.body, fontWeight: '600', color: colors.text },
-  rowHint: { fontSize: font.small, color: colors.textMuted, marginTop: 1 },
-  chevron: { fontSize: font.h2, color: colors.textFaint, fontWeight: '400' },
-  divider: { height: 1, backgroundColor: colors.line, marginLeft: spacing.lg },
+  segmentItemActive: { backgroundColor: colors.surface },
+  segmentText: { fontSize: font.small, fontWeight: weight.medium, color: colors.textMuted },
+  segmentTextActive: { color: colors.text, fontWeight: weight.semibold },
 
   cancelHint: {
     textAlign: 'center',
     color: colors.textMuted,
     fontSize: font.small,
-    fontWeight: '600',
+    fontWeight: weight.semibold,
     marginTop: spacing.md,
   },
   note: {

@@ -102,7 +102,7 @@ export default function TeacherRecordScreen({ navigation }: Props) {
           {recording ? (
             <Button title="Stop & analyse" onPress={onStop} />
           ) : (
-            <Text style={styles.note}>🔒 Recording only while a session is active.</Text>
+            <Text style={styles.note}>Recording only while a session is active.</Text>
           )}
         </View>
       </SafeAreaView>
@@ -125,7 +125,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: 1,
     borderColor: colors.glassBorder,
   },
-  tipLabel: { color: colors.textMuted, fontSize: font.tiny, fontWeight: '800', letterSpacing: 0.5, marginBottom: spacing.sm },
+  tipLabel: { color: colors.textMuted, fontSize: font.tiny, fontWeight: '700', letterSpacing: 0.5, marginBottom: spacing.sm },
   tipText: { color: colors.text, fontSize: font.body, lineHeight: 24 },
   center: { alignItems: 'center' },
   timer: { color: colors.text, fontSize: 52, fontWeight: '300', fontVariant: ['tabular-nums'], marginBottom: spacing.xl },

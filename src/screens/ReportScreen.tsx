@@ -230,7 +230,7 @@ export default function ReportScreen({ route, navigation }: Props) {
         <Button
           title="Export transcript (.txt)"
           variant="secondary"
-          icon="📄"
+          icon="doc"
           onPress={onExportTranscript}
           style={{ marginTop: spacing.md }}
         />
@@ -291,14 +291,28 @@ const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   skeletonScreen: { flex: 1, backgroundColor: colors.bg, padding: spacing.lg },
-  task: { fontSize: font.h3, fontWeight: '700', color: colors.text, lineHeight: 26 },
+  task: {
+    fontSize: font.h2,
+    fontWeight: '600',
+    color: colors.text,
+    lineHeight: 29,
+    letterSpacing: -0.4,
+  },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
-  trend: { marginTop: spacing.md, fontSize: font.small, fontWeight: '700' },
-  indexTitle: { fontSize: font.h3, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
+  trend: { marginTop: spacing.md, fontSize: font.small, fontWeight: '600' },
+  indexTitle: {
+    fontSize: font.tiny,
+    fontWeight: '600',
+    letterSpacing: 1,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+  },
   sectionTitle: {
     fontSize: font.h3,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.text,
+    letterSpacing: -0.2,
     marginBottom: spacing.md,
   },
   pillarList: { marginTop: spacing.lg },
@@ -306,23 +320,26 @@ const useStyles = makeStyles((colors) => ({
   pillarName: { width: 92, fontSize: font.tiny, color: colors.text, fontWeight: '600' },
   barTrack: {
     flex: 1,
-    height: 10,
+    height: 8,
     backgroundColor: colors.cardMuted,
     borderRadius: radius.pill,
     marginHorizontal: spacing.sm,
     overflow: 'hidden',
   },
-  barFill: { height: 10, borderRadius: radius.pill },
-  pillarScore: { width: 28, textAlign: 'right', fontWeight: '800', fontSize: font.small },
+  barFill: { height: 8, borderRadius: radius.pill },
+  pillarScore: { width: 28, textAlign: 'right', fontWeight: '700', fontSize: font.small },
   bulletRow: { flexDirection: 'row', marginBottom: spacing.sm },
-  check: { color: colors.good, fontWeight: '800', marginRight: spacing.sm },
+  check: { color: colors.good, fontWeight: '700', marginRight: spacing.sm },
   bulletText: { flex: 1, color: colors.text, fontSize: font.body, lineHeight: 22 },
   focusHeading: {
-    fontSize: font.h3,
-    fontWeight: '800',
-    color: colors.text,
+    fontSize: font.tiny,
+    fontWeight: '600',
+    letterSpacing: 1,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
     marginTop: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: 10,
+    marginLeft: 4,
   },
   focusHeader: {
     flexDirection: 'row',
@@ -330,8 +347,8 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
-  focusTitle: { fontSize: font.h3, fontWeight: '700', color: colors.text },
-  focusBand: { fontSize: font.small, fontWeight: '800' },
+  focusTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.2 },
+  focusBand: { fontSize: font.small, fontWeight: '600' },
   why: { color: colors.textMuted, fontSize: font.small, marginBottom: spacing.md, lineHeight: 20 },
   evidenceBox: {
     backgroundColor: colors.cardMuted,

@@ -15,7 +15,7 @@ export default function MetricRing({ value, label, size = 96 }: Props) {
   const colors = useColors();
   const styles = useStyles();
   const v = Math.max(0, Math.min(100, Math.round(value)));
-  const stroke = 9;
+  const stroke = 7.5;
   const r = (100 - stroke) / 2;
   const c = 2 * Math.PI * r;
   const dash = (c * v) / 100;
@@ -52,14 +52,16 @@ const useStyles = makeStyles((colors) => ({
   center: { alignItems: 'center', justifyContent: 'center' },
   value: {
     color: colors.text,
-    fontWeight: '800',
+    fontWeight: '600',
+    letterSpacing: -0.5,
     includeFontPadding: false,
     textAlignVertical: 'center',
+    fontVariant: ['tabular-nums'],
   },
   label: {
     marginTop: 8,
     color: colors.textMuted,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
   },
 }));

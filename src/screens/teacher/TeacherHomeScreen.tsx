@@ -31,13 +31,13 @@ export default function TeacherHomeScreen({ navigation }: Props) {
 
           <Button
             title="Record with phone mic"
-            icon="🎙️"
+            icon="mic"
             onPress={() => navigation.navigate('TeacherRecord')}
             style={{ marginTop: spacing.md }}
           />
           <Button
             title="Use EduBand band"
-            icon="🎧"
+            icon="waveform"
             variant="secondary"
             onPress={() =>
               Alert.alert(
@@ -113,7 +113,7 @@ function timeAgo(ms: number): string {
 }
 
 const useStyles = makeStyles((colors) => ({
-  hi: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.sm },
   attachCard: { borderStyle: 'dashed' as const, marginTop: spacing.md },
   attachTitle: { fontSize: font.body, fontWeight: '700', color: colors.text },
@@ -123,9 +123,9 @@ const useStyles = makeStyles((colors) => ({
   rowTitle: { fontSize: font.body, fontWeight: '600', color: colors.text },
   rowMeta: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   scorePill: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  scoreText: { fontSize: font.h3, fontWeight: '800' },
+  scoreText: { fontSize: font.h3, fontWeight: '700' },
   weekLabel: { fontSize: font.small, color: colors.textMuted, fontWeight: '700', marginBottom: spacing.sm },
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
   statLabel: { fontSize: font.body, color: colors.text },
-  statValue: { fontSize: font.h3, fontWeight: '800' },
+  statValue: { fontSize: font.h3, fontWeight: '700' },
 }));

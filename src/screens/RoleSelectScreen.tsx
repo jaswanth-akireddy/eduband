@@ -9,12 +9,13 @@ import { Role } from '@/types';
 import { colors, font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
 import { saveRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
+import Icon, { IconName } from '@/components/Icon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoleSelect'>;
 
 interface RoleCard {
   role: Role;
-  emoji: string;
+  icon: IconName;
   title: string;
   subtitle: string;
   tint: string;
@@ -23,28 +24,28 @@ interface RoleCard {
 const ROLES: RoleCard[] = [
   {
     role: 'student',
-    emoji: '🎓',
+    icon: 'book',
     title: 'Student',
     subtitle: 'Record, practise & track your speaking',
     tint: colors.blue,
   },
   {
     role: 'teacher',
-    emoji: '📚',
+    icon: 'waveform',
     title: 'Teacher',
     subtitle: 'Analyse your teaching & content',
     tint: colors.violet,
   },
   {
     role: 'parent',
-    emoji: '👨‍👩‍👧',
+    icon: 'person',
     title: 'Parent',
     subtitle: "See your child's communication insights",
     tint: colors.pink,
   },
   {
     role: 'professional',
-    emoji: '💼',
+    icon: 'target',
     title: 'Professional',
     subtitle: 'Interview, presentation & workplace prep',
     tint: colors.accent,
@@ -90,14 +91,14 @@ export default function RoleSelectScreen({ navigation }: Props) {
                   pressed && styles.pressed,
                 ]}
               >
-                <View style={[styles.iconCircle, { backgroundColor: r.tint + '2E' }]}>
-                  <Text style={styles.emoji}>{r.emoji}</Text>
+                <View style={[styles.iconCircle, { backgroundColor: r.tint + '16' }]}>
+                  <Icon name={r.icon} size={22} color={r.tint} strokeWidth={1.9} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle}>{r.title}</Text>
                   <Text style={styles.cardSub}>{r.subtitle}</Text>
                 </View>
-                <Text style={[styles.chevron, { color: r.tint }]}>›</Text>
+                <Icon name="chevronRight" size={16} color={colors.textFaint} />
               </Pressable>
             ))}
           </View>
@@ -106,7 +107,7 @@ export default function RoleSelectScreen({ navigation }: Props) {
             You can switch roles anytime from your profile.
           </Text>
           <Text style={styles.devLink} onPress={() => navigation.navigate('ApiKeys')}>
-            ⚙ API keys (testing)
+            Developer settings
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -118,16 +119,16 @@ const useStyles = makeStyles((colors) => ({
   container: { padding: spacing.lg, flexGrow: 1 },
   logoWrap: { alignItems: 'center', marginTop: spacing.xl },
   logo: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 88,
+    height: 88,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoText: { color: colors.white, fontSize: 34, fontWeight: '800', letterSpacing: -1 },
+  logoText: { color: colors.white, fontSize: 34, fontWeight: '700', letterSpacing: -1 },
   title: {
     fontSize: font.h1,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
     marginTop: spacing.lg,
@@ -152,17 +153,15 @@ const useStyles = makeStyles((colors) => ({
   },
   pressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
   iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 46,
+    height: 46,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  emoji: { fontSize: 24 },
-  cardTitle: { fontSize: font.h3, fontWeight: '700', color: colors.text },
+  cardTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.2 },
   cardSub: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
-  chevron: { fontSize: 30, fontWeight: '700', marginLeft: spacing.sm },
   footer: {
     color: colors.textFaint,
     fontSize: font.tiny,
@@ -170,9 +169,9 @@ const useStyles = makeStyles((colors) => ({
     marginTop: spacing.xl,
   },
   devLink: {
-    color: colors.accent,
+    color: colors.textMuted,
     fontSize: font.small,
-    fontWeight: '700',
+    fontWeight: '500',
     textAlign: 'center',
     marginTop: spacing.md,
   },
