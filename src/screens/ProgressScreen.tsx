@@ -6,10 +6,11 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { font, makeStyles, radius, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, scoreColor, spacing, useColors, weight } from '@/theme';
 import { getSessions } from '@/storage/store';
 import { Session } from '@/types';
 import Card from '@/components/Card';
+import Icon from '@/components/Icon';
 import TrendChart from '@/components/TrendChart';
 
 type Props = CompositeScreenProps<
@@ -18,6 +19,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function ProgressScreen({ navigation }: Props) {
+  const colors = useColors();
   const styles = useStyles();
   const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -42,7 +44,7 @@ export default function ProgressScreen({ navigation }: Props) {
       <Text style={styles.title}>Your progress</Text>
 
       <Card>
-        <Text style={styles.cardLabel}>Communication Index over time</Text>
+        <Text style={styles.cardLabel}>COMMUNICATION INDEX OVER TIME</Text>
         <TrendChart values={ciValues} />
         <View style={styles.statsRow}>
           <Stat label="Sessions" value={`${sessions.length}`} />
@@ -54,37 +56,36 @@ export default function ProgressScreen({ navigation }: Props) {
         </View>
       </Card>
 
-      <Text style={styles.subhead}>History</Text>
+      <Text style={styles.subhead}>HISTORY</Text>
       {sessions.length === 0 && (
         <Text style={styles.empty}>
           No sessions yet. Record one from the Home tab to begin.
         </Text>
       )}
-      {sessions.map((s) => (
-        <Pressable
-          key={s.id}
-          onPress={() => navigation.navigate('Report', { sessionId: s.id })}
-        >
-          <Card style={styles.histCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.histTask} numberOfLines={1}>
-                {s.taskPrompt}
-              </Text>
-              <Text style={styles.histDate}>{formatDate(s.createdAt)}</Text>
+      {sessions.length > 0 && (
+        <Card style={styles.histGroup}>
+          {sessions.map((s, i) => (
+            <View key={s.id}>
+              {i > 0 && <View style={styles.histDivider} />}
+              <Pressable
+                onPress={() => navigation.navigate('Report', { sessionId: s.id })}
+                style={({ pressed }) => [styles.histRow, pressed && styles.histPressed]}
+              >
+                <View style={{ flex: 1, paddingRight: spacing.md }}>
+                  <Text style={styles.histTask} numberOfLines={1}>
+                    {s.taskPrompt}
+                  </Text>
+                  <Text style={styles.histDate}>{formatDate(s.createdAt)}</Text>
+                </View>
+                <Text style={[styles.histScoreText, { color: scoreColor(s.analysis.ci) }]}>
+                  {s.analysis.ci}
+                </Text>
+                <Icon name="chevronRight" size={15} color={colors.textFaint} />
+              </Pressable>
             </View>
-            <View
-              style={[
-                styles.histScore,
-                { backgroundColor: scoreColor(s.analysis.ci) + '22' },
-              ]}
-            >
-              <Text style={[styles.histScoreText, { color: scoreColor(s.analysis.ci) }]}>
-                {s.analysis.ci}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
-      ))}
+          ))}
+        </Card>
+      )}
     </ScrollView>
   );
 }
@@ -127,11 +128,18 @@ function formatDate(ms: number): string {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
+  title: {
+    fontSize: font.h1,
+    fontWeight: weight.bold,
+    color: colors.text,
+    letterSpacing: -0.6,
+    marginBottom: spacing.md,
+  },
   cardLabel: {
-    fontSize: font.small,
+    fontSize: font.tiny,
     color: colors.textMuted,
-    fontWeight: '600',
+    fontWeight: weight.semibold,
+    letterSpacing: 1,
     marginBottom: spacing.sm,
   },
   statsRow: {
@@ -139,29 +147,48 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'space-around',
     marginTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.line,
     paddingTop: spacing.md,
   },
   stat: { alignItems: 'center' },
-  statValue: { fontSize: font.h2, fontWeight: '700', color: colors.text },
-  statLabel: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
-  subhead: {
-    fontSize: font.h3,
-    fontWeight: '700',
+  statValue: {
+    fontSize: font.h2,
+    fontWeight: weight.semibold,
     color: colors.text,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
+    letterSpacing: -0.4,
+    fontVariant: ['tabular-nums'],
+  },
+  statLabel: { fontSize: font.tiny, color: colors.textMuted, marginTop: 3 },
+  subhead: {
+    fontSize: font.tiny,
+    fontWeight: weight.semibold,
+    letterSpacing: 1,
+    color: colors.textMuted,
+    marginTop: spacing.lg,
+    marginBottom: 10,
+    marginLeft: 4,
   },
   empty: { color: colors.textMuted, fontSize: font.body },
-  histCard: { flexDirection: 'row', alignItems: 'center' },
-  histTask: { fontSize: font.body, fontWeight: '600', color: colors.text },
-  histDate: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
-  histScore: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  histGroup: { padding: 0, overflow: 'hidden' },
+  histRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  histScoreText: { fontSize: font.h3, fontWeight: '700' },
+  histPressed: { backgroundColor: colors.surfaceAlt },
+  histDivider: { height: 1, backgroundColor: colors.line, marginLeft: 16 },
+  histTask: {
+    fontSize: font.body,
+    fontWeight: weight.medium,
+    color: colors.text,
+    letterSpacing: -0.1,
+  },
+  histDate: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
+  histScoreText: {
+    fontSize: font.h3,
+    fontWeight: weight.semibold,
+    marginRight: 6,
+    fontVariant: ['tabular-nums'],
+  },
 }));

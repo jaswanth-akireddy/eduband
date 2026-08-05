@@ -45,12 +45,8 @@ export default function TrendChart({ values, width = 320, height = 150 }: Props)
     <Svg width={width} height={height}>
       <Defs>
         <LinearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={colors.primary} stopOpacity="0.35" />
-          <Stop offset="1" stopColor={colors.primary} stopOpacity="0.02" />
-        </LinearGradient>
-        <LinearGradient id="trendLine" x1="0" y1="0" x2="1" y2="0">
-          <Stop offset="0" stopColor={colors.accent} />
-          <Stop offset="1" stopColor={colors.violet} />
+          <Stop offset="0" stopColor={colors.primary} stopOpacity="0.16" />
+          <Stop offset="1" stopColor={colors.primary} stopOpacity="0.01" />
         </LinearGradient>
       </Defs>
 
@@ -61,32 +57,34 @@ export default function TrendChart({ values, width = 320, height = 150 }: Props)
           y1={y(g)}
           x2={width - pad}
           y2={y(g)}
-          stroke={colors.border}
+          stroke={colors.line}
           strokeWidth={1}
-          strokeDasharray="3 5"
         />
       ))}
 
       <Path d={area} fill="url(#trendArea)" />
       <Path
         d={line}
-        stroke="url(#trendLine)"
-        strokeWidth={3}
+        stroke={colors.primary}
+        strokeWidth={2.5}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {values.map((v, i) => (
-        <Circle
-          key={i}
-          cx={x(i)}
-          cy={y(v)}
-          r={4.5}
-          fill={colors.white}
-          stroke={colors.violet}
-          strokeWidth={2.5}
-        />
-      ))}
+      {values.map((v, i) => {
+        const isLast = i === values.length - 1;
+        return (
+          <Circle
+            key={i}
+            cx={x(i)}
+            cy={y(v)}
+            r={isLast ? 5 : 3}
+            fill={isLast ? colors.primary : colors.surface}
+            stroke={colors.primary}
+            strokeWidth={isLast ? 2 : 1.5}
+          />
+        );
+      })}
     </Svg>
   );
 }

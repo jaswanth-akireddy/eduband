@@ -1,18 +1,18 @@
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { font, makeStyles, radius, spacing } from '@/theme';
+import { font, makeStyles, pillarColor, radius, shadow, spacing, useColors, weight } from '@/theme';
 import { getProfile } from '@/storage/store';
 import { Task } from '@/types';
 import { tasksForLevel, TASKS } from '@/data/tasks';
 import { pillarDef } from '@/analysis/framework';
-import Card from '@/components/Card';
 import Button from '@/components/Button';
+import Icon from '@/components/Icon';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Practice'>,
@@ -20,6 +20,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function PracticeScreen({ navigation }: Props) {
+  const colors = useColors();
   const styles = useStyles();
   const [tasks, setTasks] = useState<Task[]>(TASKS);
 
@@ -36,7 +37,8 @@ export default function PracticeScreen({ navigation }: Props) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={{ padding: spacing.lg }}
+      contentContainerStyle={{ padding: 20, paddingBottom: spacing.xl }}
+      showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>Guided tasks</Text>
       <Text style={styles.sub}>
@@ -45,31 +47,43 @@ export default function PracticeScreen({ navigation }: Props) {
       </Text>
 
       {tasks.map((t) => (
-        <Card key={t.id}>
-          <Text style={styles.prompt}>{t.prompt}</Text>
-          <View style={styles.tagRow}>
-            <Text style={styles.timeTag}>
-              ~{Math.round(t.suggestedSeconds / 60)} min
-            </Text>
-            {t.targetPillars.map((p) => (
-              <Text key={p} style={styles.skillTag}>
-                {pillarDef(p).short}
-              </Text>
-            ))}
+        <Pressable
+          key={t.id}
+          onPress={() => navigation.navigate('Record', { taskId: t.id })}
+          style={({ pressed }) => [
+            styles.taskCard,
+            shadow.card,
+            pressed && styles.taskPressed,
+          ]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.prompt}>{t.prompt}</Text>
+            <View style={styles.tagRow}>
+              <View style={styles.timeTag}>
+                <Icon name="clock" size={12} color={colors.textMuted} />
+                <Text style={styles.timeTagText}>
+                  {Math.round(t.suggestedSeconds / 60)} min
+                </Text>
+              </View>
+              {t.targetPillars.map((p) => (
+                <View key={p} style={[styles.skillTag, { backgroundColor: pillarColor(p) + '14' }]}>
+                  <Text style={[styles.skillTagText, { color: pillarColor(p) }]}>
+                    {pillarDef(p).short}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
-          <Button
-            title="Start this task"
-            onPress={() => navigation.navigate('Record', { taskId: t.id })}
-            style={{ marginTop: spacing.md }}
-          />
-        </Card>
+          <Icon name="chevronRight" size={16} color={colors.textFaint} />
+        </Pressable>
       ))}
 
       <Button
-        title="Free record (no prompt)"
+        title="Free record"
         variant="secondary"
+        icon="mic"
         onPress={() => navigation.navigate('Record', { taskId: null })}
-        style={{ marginTop: spacing.sm, marginBottom: spacing.xl }}
+        style={{ marginTop: spacing.sm }}
       />
     </ScrollView>
   );
@@ -77,41 +91,64 @@ export default function PracticeScreen({ navigation }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text },
+  title: {
+    fontSize: font.h1,
+    fontWeight: weight.bold,
+    color: colors.text,
+    letterSpacing: -0.6,
+  },
   sub: {
     fontSize: font.body,
     color: colors.textMuted,
     marginBottom: spacing.lg,
     marginTop: spacing.xs,
-    lineHeight: 22,
+    lineHeight: 21,
   },
-  prompt: { fontSize: font.h3, color: colors.text, lineHeight: 26, fontWeight: '600' },
+  taskCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    paddingLeft: spacing.lg,
+    marginBottom: 12,
+  },
+  taskPressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
+  prompt: {
+    fontSize: font.body,
+    color: colors.text,
+    lineHeight: 22,
+    fontWeight: weight.semibold,
+    letterSpacing: -0.2,
+    paddingRight: spacing.sm,
+  },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.md,
+    gap: 6,
+    marginTop: 10,
   },
   timeTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: colors.surfaceAlt,
-    color: colors.white,
-    fontSize: font.tiny,
-    fontWeight: '700',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
     borderRadius: radius.pill,
-    overflow: 'hidden',
   },
-  skillTag: {
-    backgroundColor: colors.cardMuted,
+  timeTagText: {
     color: colors.textMuted,
     fontSize: font.tiny,
-    fontWeight: '700',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    fontWeight: weight.semibold,
+  },
+  skillTag: {
+    paddingVertical: 4,
+    paddingHorizontal: 9,
     borderRadius: radius.pill,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
+  },
+  skillTagText: {
+    fontSize: font.tiny,
+    fontWeight: weight.semibold,
   },
 }));

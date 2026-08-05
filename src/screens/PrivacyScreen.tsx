@@ -18,7 +18,7 @@ import {
 } from '@/storage/store';
 import { ConsentRecord } from '@/types';
 import Card from '@/components/Card';
-import Button from '@/components/Button';
+import ListRow, { RowDivider } from '@/components/ListRow';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Privacy'>,
@@ -132,25 +132,40 @@ export default function PrivacyScreen({ navigation }: Props) {
         <Promise text="Data encrypted in transit and at rest (in the hosted version)." />
       </Card>
 
-      <Button title="Export my data (JSON)" variant="secondary" onPress={onExport} />
-      <Button
-        title="API keys (testing)"
-        variant="secondary"
-        onPress={() => navigation.navigate('ApiKeys')}
-        style={{ marginTop: spacing.sm }}
-      />
-      <Button
-        title="Switch role"
-        variant="secondary"
-        onPress={onSwitchRole}
-        style={{ marginTop: spacing.sm }}
-      />
-      <Button
-        title="Delete all my data"
-        variant="ghost"
-        onPress={onDeleteAll}
-        style={{ marginTop: spacing.xs }}
-      />
+      <Card style={styles.actionsGroup}>
+        <ListRow
+          icon="share"
+          tint={colors.good}
+          label="Export my data"
+          hint="JSON copy of everything we hold"
+          onPress={onExport}
+        />
+        <RowDivider />
+        <ListRow
+          icon="key"
+          tint="#E8930C"
+          label="API keys"
+          hint="Configure services on-device"
+          onPress={() => navigation.navigate('ApiKeys')}
+        />
+        <RowDivider />
+        <ListRow
+          icon="swap"
+          tint="#6366F1"
+          label="Switch role"
+          hint="Back to the welcome screen"
+          onPress={onSwitchRole}
+        />
+        <RowDivider />
+        <ListRow
+          icon="trash"
+          tint={colors.low}
+          label="Delete all my data"
+          hint="Removes everything — cannot be undone"
+          onPress={onDeleteAll}
+          destructive
+        />
+      </Card>
 
       <Text style={styles.legal}>
         Designed for India's DPDP Act 2023, configurable for GDPR-K, COPPA and
@@ -172,7 +187,8 @@ function Promise({ text }: { text: string }) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.6 },
+  actionsGroup: { padding: 0, overflow: 'hidden' },
   sub: {
     fontSize: font.body,
     color: colors.textMuted,

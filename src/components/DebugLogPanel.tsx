@@ -50,8 +50,7 @@ export default function DebugLogPanel() {
         accessibilityLabel="Open debug logs"
       >
         <Text style={styles.pillText}>
-          🐞 Logs{logs.length ? ` ${logs.length}` : ''}
-          {errorCount > 0 ? ` · ${errorCount}⚠` : ''}
+          Logs{errorCount > 0 ? ` · ${errorCount}!` : ''}
         </Text>
       </Pressable>
     );
@@ -95,19 +94,17 @@ export default function DebugLogPanel() {
 const styles = StyleSheet.create({
   pill: {
     position: 'absolute',
-    right: 10,
-    bottom: 88,
-    backgroundColor: 'rgba(20,20,22,0.92)',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    right: 12,
+    bottom: 78,
+    backgroundColor: 'rgba(20,20,24,0.55)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
     zIndex: 9999,
-    elevation: 12,
+    elevation: 8,
   },
-  pillError: { borderColor: '#F87171' },
-  pillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  pillError: { backgroundColor: 'rgba(229,72,77,0.85)' },
+  pillText: { color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: '600' },
   panel: {
     position: 'absolute',
     left: 8,
