@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
@@ -12,6 +12,7 @@ import { addSession, getProfile, getSettings } from '@/storage/store';
 import { Session } from '@/types';
 import { describeMode } from '@/config';
 import { logError, logEvent, logInfo, logWarn, withTimeout } from '@/services/logger';
+import RecordingWave from '@/components/RecordingWave';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Processing'>;
 
@@ -102,7 +103,9 @@ export default function ProcessingScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.waveWrap}>
+        <RecordingWave color={colors.primary} active />
+      </View>
       <Text style={styles.title}>Analysing your session</Text>
       <Text style={styles.step}>{STEPS[step]}</Text>
       <View style={styles.dots}>
@@ -127,16 +130,18 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'center',
     padding: spacing.xl,
   },
+  waveWrap: { height: 44, justifyContent: 'center' },
   title: {
-    color: colors.textOnDark,
+    color: colors.text,
     fontSize: font.h2,
-    fontWeight: '700',
+    fontWeight: '600',
+    letterSpacing: -0.4,
     marginTop: spacing.xl,
   },
   step: {
-    color: colors.textMutedOnDark,
+    color: colors.textMuted,
     fontSize: font.body,
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
     textAlign: 'center',
     minHeight: 24,
   },
@@ -149,13 +154,13 @@ const useStyles = makeStyles((colors) => ({
   },
   dotActive: { backgroundColor: colors.primary },
   note: {
-    color: colors.textMutedOnDark,
+    color: colors.textFaint,
     fontSize: font.small,
     marginTop: spacing.xl,
   },
   mode: {
     color: colors.textFaint,
     fontSize: font.tiny,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
 }));

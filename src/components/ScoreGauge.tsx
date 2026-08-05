@@ -14,7 +14,7 @@ interface Props {
 const CX = 150;
 const CY = 160;
 const R = 96;
-const STROKE = 16;
+const STROKE = 13;
 const START = -135; // degrees, 0 = top, clockwise
 const SWEEP = 270;
 
@@ -61,8 +61,9 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
       <SvgText
         x={CX}
         y={CY + 2}
-        fontSize={62}
-        fontWeight="800"
+        fontSize={60}
+        fontWeight="700"
+        letterSpacing={-2}
         fill={colors.text}
         textAnchor="middle"
       >
@@ -79,22 +80,22 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         out of 100
       </SvgText>
       {/* Band pill */}
-      <Rect x={CX - 46} y={CY + 44} width={92} height={28} rx={14} fill={color + '22'} />
+      <Rect x={CX - 40} y={CY + 44} width={80} height={26} rx={13} fill={color + '16'} />
       <SvgText
         x={CX}
-        y={CY + 63}
+        y={CY + 61}
         fontSize={13}
-        fontWeight="800"
+        fontWeight="700"
         fill={color}
         textAnchor="middle"
       >
         {band}
       </SvgText>
       {/* End ticks */}
-      <SvgText x={t0x} y={tickY} fontSize={12} fontWeight="700" fill={colors.textFaint} textAnchor="middle">
+      <SvgText x={t0x} y={tickY} fontSize={11} fontWeight="600" fill={colors.textFaint} textAnchor="middle">
         0
       </SvgText>
-      <SvgText x={t1x} y={tickY} fontSize={12} fontWeight="700" fill={colors.textFaint} textAnchor="middle">
+      <SvgText x={t1x} y={tickY} fontSize={11} fontWeight="600" fill={colors.textFaint} textAnchor="middle">
         100
       </SvgText>
     </Svg>

@@ -22,7 +22,8 @@ export type IconName =
   | 'key'
   | 'logout'
   | 'swap'
-  | 'clock';
+  | 'clock'
+  | 'trash';
 
 interface Props {
   name: IconName;
@@ -162,6 +163,14 @@ export default function Icon({ name, size = 22, color = '#1B1B1F', strokeWidth =
         <>
           <Circle cx={12} cy={12} r={8.5} {...p} />
           <Path d="M12 7.5V12l3 2" {...p} />
+        </>
+      )}
+      {name === 'trash' && (
+        <>
+          <Path d="M5 7h14" {...p} />
+          <Path d="M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2" {...p} />
+          <Path d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12" {...p} />
+          <Path d="M10 11v6M14 11v6" {...p} />
         </>
       )}
     </Svg>
