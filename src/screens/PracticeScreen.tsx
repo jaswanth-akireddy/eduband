@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps } from '@react-navigation/native';
@@ -35,8 +36,8 @@ export default function PracticeScreen({ navigation }: Props) {
   );
 
   return (
+    <SafeAreaView style={styles.screen} edges={['top']}>
     <ScrollView
-      style={styles.screen}
       contentContainerStyle={{ padding: 20, paddingBottom: spacing.xl }}
       showsVerticalScrollIndicator={false}
     >
@@ -86,6 +87,7 @@ export default function PracticeScreen({ navigation }: Props) {
         style={{ marginTop: spacing.sm }}
       />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
