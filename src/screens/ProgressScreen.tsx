@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps } from '@react-navigation/native';
@@ -37,9 +38,10 @@ export default function ProgressScreen({ navigation }: Props) {
   const streak = computeStreak(sessions);
 
   return (
+    <SafeAreaView style={styles.screen} edges={['top']}>
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={{ padding: spacing.lg }}
+      contentContainerStyle={{ padding: 20, paddingBottom: spacing.xl }}
+      showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>Your progress</Text>
 
@@ -87,6 +89,7 @@ export default function ProgressScreen({ navigation }: Props) {
         </Card>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

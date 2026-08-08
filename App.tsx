@@ -57,10 +57,10 @@ const TeacherTab = createBottomTabNavigator<TeacherTabsParamList>();
 
 function StudentTabs() {
   const colors = useColors();
+  // No fixed height: react-navigation sizes the bar and adds the device's
+  // bottom inset itself (a hardcoded height breaks gesture-nav phones).
   const tabBarStyle = {
-    height: 66,
-    paddingBottom: 10,
-    paddingTop: 8,
+    paddingTop: 6,
     backgroundColor: colors.surface,
     borderTopColor: colors.glassBorder,
     borderTopWidth: 1,
@@ -89,10 +89,10 @@ function StudentTabs() {
 
 function TeacherTabs() {
   const colors = useColors();
+  // No fixed height: react-navigation sizes the bar and adds the device's
+  // bottom inset itself (a hardcoded height breaks gesture-nav phones).
   const tabBarStyle = {
-    height: 66,
-    paddingBottom: 10,
-    paddingTop: 8,
+    paddingTop: 6,
     backgroundColor: colors.surface,
     borderTopColor: colors.glassBorder,
     borderTopWidth: 1,

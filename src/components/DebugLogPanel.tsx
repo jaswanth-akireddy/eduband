@@ -41,6 +41,11 @@ export default function DebugLogPanel() {
 
   const errorCount = logs.filter((l) => l.level === 'error').length;
 
+  // Production discipline: the pill is a developer tool. In release builds it
+  // stays hidden unless something actually went wrong, so ordinary users never
+  // see debug chrome — but a live failure can still be inspected in the field.
+  if (!open && !__DEV__ && errorCount === 0) return null;
+
   if (!open) {
     return (
       <Pressable

@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, Switch, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps } from '@react-navigation/native';
@@ -81,9 +82,10 @@ export default function PrivacyScreen({ navigation }: Props) {
   }
 
   return (
+    <SafeAreaView style={styles.screen} edges={['top']}>
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={{ padding: spacing.lg }}
+      contentContainerStyle={{ padding: 20, paddingBottom: spacing.xl }}
+      showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>Privacy & data</Text>
       <Text style={styles.sub}>
@@ -172,6 +174,7 @@ export default function PrivacyScreen({ navigation }: Props) {
         FERPA. Informational, not legal advice.
       </Text>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
