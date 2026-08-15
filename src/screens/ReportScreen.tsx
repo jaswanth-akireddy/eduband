@@ -27,6 +27,7 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Confetti from '@/components/Confetti';
 import Skeleton from '@/components/Skeleton';
+import FadeIn from '@/components/FadeIn';
 import { logError, logEvent, logInfo } from '@/services/logger';
 import { notifySuccess } from '@/services/haptics';
 
@@ -131,6 +132,7 @@ export default function ReportScreen({ route, navigation }: Props) {
       </Text>
 
       {/* Communication Index */}
+      <FadeIn>
       <Card style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
         <Text style={styles.indexTitle}>Communication Index</Text>
         <ScoreGauge score={analysis.ci} size={252} />
@@ -148,6 +150,7 @@ export default function ReportScreen({ route, navigation }: Props) {
           </Text>
         )}
       </Card>
+      </FadeIn>
 
       {/* Pillar radar */}
       <Card>
