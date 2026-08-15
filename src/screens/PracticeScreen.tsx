@@ -14,6 +14,7 @@ import { tasksForLevel, TASKS } from '@/data/tasks';
 import { pillarDef } from '@/analysis/framework';
 import Button from '@/components/Button';
 import Icon from '@/components/Icon';
+import FadeIn from '@/components/FadeIn';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Practice'>,
@@ -47,9 +48,9 @@ export default function PracticeScreen({ navigation }: Props) {
         time.
       </Text>
 
-      {tasks.map((t) => (
+      {tasks.map((t, i) => (
+        <FadeIn key={t.id} delay={60 + i * 60}>
         <Pressable
-          key={t.id}
           onPress={() => navigation.navigate('Record', { taskId: t.id })}
           accessibilityRole="button"
           accessibilityLabel={`Start task: ${t.prompt}`}
@@ -79,6 +80,7 @@ export default function PracticeScreen({ navigation }: Props) {
           </View>
           <Icon name="chevronRight" size={16} color={colors.textFaint} />
         </Pressable>
+        </FadeIn>
       ))}
 
       <Button

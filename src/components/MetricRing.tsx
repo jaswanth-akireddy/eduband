@@ -1,25 +1,48 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { makeStyles, scoreColor, useColors } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   value: number; // 0-100
   label: string;
   size?: number;
+  delay?: number; // stagger offset for entrance
 }
 
 // A single Whoop-style full-circle progress ring: value in the centre, coloured
-// by score band, with a label beneath. Composed in a row for the dashboard.
-export default function MetricRing({ value, label, size = 96 }: Props) {
+// by score band, with a label beneath. Sweeps from 0 to its value on entrance
+// (the number counts up in sync), staggered per ring via `delay`.
+export default function MetricRing({ value, label, size = 96, delay = 0 }: Props) {
   const colors = useColors();
   const styles = useStyles();
-  const v = Math.max(0, Math.min(100, Math.round(value)));
+  const target = Math.max(0, Math.min(100, Math.round(value)));
+  const reduceMotion = useReducedMotion();
+  const anim = useRef(new Animated.Value(0)).current;
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setProgress(target);
+      return;
+    }
+    const id = anim.addListener(({ value: v }) => setProgress(v));
+    Animated.timing(anim, {
+      toValue: target,
+      duration: 900,
+      delay,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false, // drives SVG props via state
+    }).start();
+    return () => anim.removeListener(id);
+  }, [target, delay, anim, reduceMotion]);
+
   const stroke = 7.5;
   const r = (100 - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const dash = (c * v) / 100;
-  const color = scoreColor(v);
+  const dash = (c * progress) / 100;
+  const color = scoreColor(target);
 
   return (
     <View style={styles.item}>
@@ -39,7 +62,9 @@ export default function MetricRing({ value, label, size = 96 }: Props) {
           />
         </Svg>
         <View style={[StyleSheet.absoluteFill, styles.center]}>
-          <Text style={[styles.value, { fontSize: Math.round(size * 0.3) }]}>{v}</Text>
+          <Text style={[styles.value, { fontSize: Math.round(size * 0.3) }]}>
+            {Math.round(progress)}
+          </Text>
         </View>
       </View>
       <Text style={styles.label}>{label}</Text>

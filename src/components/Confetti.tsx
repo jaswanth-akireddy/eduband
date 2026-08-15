@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, View } from 'react-native';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Lightweight confetti burst — no native dependency. One shared Animated.Value
 // drives every piece via interpolation, so it's cheap. Fires once each time
@@ -9,6 +10,7 @@ const PALETTE = ['#FF385C', '#008489', '#FFB400', '#7B61FF', '#00A699', '#FC642D
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
 export default function Confetti({ trigger }: { trigger: boolean }) {
+  const reduceMotion = useReducedMotion();
   const progress = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(false);
 
@@ -26,7 +28,7 @@ export default function Confetti({ trigger }: { trigger: boolean }) {
   );
 
   useEffect(() => {
-    if (!trigger) return;
+    if (!trigger || reduceMotion) return;
     setVisible(true);
     progress.setValue(0);
     Animated.timing(progress, {
@@ -34,7 +36,7 @@ export default function Confetti({ trigger }: { trigger: boolean }) {
       duration: 2600,
       useNativeDriver: true,
     }).start(() => setVisible(false));
-  }, [trigger, progress]);
+  }, [trigger, progress, reduceMotion]);
 
   if (!visible) return null;
 

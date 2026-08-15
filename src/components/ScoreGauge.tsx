@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing } from 'react-native';
 import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
 import { scoreBand, scoreColor, useColors } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   score: number; // 0-100
@@ -35,6 +37,25 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
   const clamped = Math.max(0, Math.min(100, score));
   const color = scoreColor(clamped);
   const band = scoreBand(clamped);
+
+  // Entrance: the arc sweeps and the score counts up together.
+  const reduceMotion = useReducedMotion();
+  const anim = useRef(new Animated.Value(0)).current;
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (reduceMotion) {
+      setProgress(clamped);
+      return;
+    }
+    const id = anim.addListener(({ value: v }) => setProgress(v));
+    Animated.timing(anim, {
+      toValue: clamped,
+      duration: 1100,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false, // drives SVG props via state
+    }).start();
+    return () => anim.removeListener(id);
+  }, [clamped, anim, reduceMotion]);
   const [t0x] = polar(START, R + 4);
   const [t1x] = polar(START + SWEEP, R + 4);
   const tickY = CY + R * Math.sin((45 * Math.PI) / 180) + 20;
@@ -50,13 +71,15 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         fill="none"
       />
       {/* Value */}
-      <Path
-        d={arc(START, START + (SWEEP * clamped) / 100)}
-        stroke={color}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-        fill="none"
-      />
+      {progress > 0.5 && (
+        <Path
+          d={arc(START, START + (SWEEP * progress) / 100)}
+          stroke={color}
+          strokeWidth={STROKE}
+          strokeLinecap="round"
+          fill="none"
+        />
+      )}
       {/* Score */}
       <SvgText
         x={CX}
@@ -67,7 +90,7 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         fill={colors.text}
         textAnchor="middle"
       >
-        {clamped}
+        {Math.round(progress)}
       </SvgText>
       <SvgText
         x={CX}

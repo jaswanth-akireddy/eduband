@@ -19,6 +19,8 @@ import MetricRing from '@/components/MetricRing';
 import Avatar from '@/components/Avatar';
 import Skeleton from '@/components/Skeleton';
 import Icon from '@/components/Icon';
+import FadeIn from '@/components/FadeIn';
+import AnimatedNumber from '@/components/AnimatedNumber';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabsParamList, 'Home'>,
@@ -95,6 +97,7 @@ export default function HomeScreen({ navigation }: Props) {
           }
         >
           {/* Large-title header */}
+          <FadeIn>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.eyebrow}>{greeting()}</Text>
@@ -111,6 +114,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Avatar gender={profile?.gender} seed={profile?.name} size={40} />
             </Pressable>
           </View>
+          </FadeIn>
 
           {!loaded ? (
             <Card variant="glass" style={{ paddingVertical: spacing.lg }}>
@@ -122,12 +126,13 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
             </Card>
           ) : latest ? (
+            <FadeIn delay={80}>
             <Card variant="glass" style={{ paddingVertical: spacing.lg }}>
               <View style={styles.ciHeader}>
                 <View>
                   <Text style={styles.overline}>COMMUNICATION INDEX</Text>
                   <View style={styles.ciScoreRow}>
-                    <Text style={styles.ciNumber}>{latest.analysis.ci}</Text>
+                    <AnimatedNumber value={latest.analysis.ci} style={styles.ciNumber} />
                     <View
                       style={[
                         styles.bandPill,
@@ -156,9 +161,9 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
 
               <View style={styles.ringsRow}>
-                <MetricRing value={pillarScore(latest, 'fluency')} label="Fluency" size={88} />
-                <MetricRing value={pillarScore(latest, 'clarity')} label="Clarity" size={88} />
-                <MetricRing value={pillarScore(latest, 'confidence')} label="Confidence" size={88} />
+                <MetricRing value={pillarScore(latest, 'fluency')} label="Fluency" size={88} delay={120} />
+                <MetricRing value={pillarScore(latest, 'clarity')} label="Clarity" size={88} delay={220} />
+                <MetricRing value={pillarScore(latest, 'confidence')} label="Confidence" size={88} delay={320} />
               </View>
 
               <View style={styles.hairline} />
@@ -181,7 +186,9 @@ export default function HomeScreen({ navigation }: Props) {
                 <Icon name="chevronRight" size={14} color={colors.textFaint} />
               </Pressable>
             </Card>
+            </FadeIn>
           ) : (
+            <FadeIn delay={80}>
             <Card variant="glass" style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
               <View style={styles.emptyBadge}>
                 <Icon name="waveform" size={26} color={colors.primary} strokeWidth={2} />
@@ -192,23 +199,26 @@ export default function HomeScreen({ navigation }: Props) {
                 across five communication skills.
               </Text>
             </Card>
+            </FadeIn>
           )}
 
-          <Button
-            title="Record a session"
-            icon="mic"
-            onPress={() => navigation.navigate('Record', { taskId: null })}
-            style={{ marginTop: spacing.sm }}
-          />
-          <Button
-            title="Guided tasks"
-            variant="secondary"
-            onPress={() => navigation.navigate('Practice')}
-            style={{ marginTop: 10 }}
-          />
+          <FadeIn delay={160}>
+            <Button
+              title="Record a session"
+              icon="mic"
+              onPress={() => navigation.navigate('Record', { taskId: null })}
+              style={{ marginTop: spacing.sm }}
+            />
+            <Button
+              title="Guided tasks"
+              variant="secondary"
+              onPress={() => navigation.navigate('Practice')}
+              style={{ marginTop: 10 }}
+            />
+          </FadeIn>
 
           {sessions.length > 0 && (
-            <>
+            <FadeIn delay={240}>
               <Text style={styles.sectionLabel}>RECENT</Text>
               <Card variant="glass" style={styles.recentCard}>
                 {sessions.slice(0, 3).map((s, i) => (
@@ -234,7 +244,7 @@ export default function HomeScreen({ navigation }: Props) {
                   </View>
                 ))}
               </Card>
-            </>
+            </FadeIn>
           )}
         </ScrollView>
       </SafeAreaView>
