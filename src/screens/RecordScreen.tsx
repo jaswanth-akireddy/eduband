@@ -38,6 +38,32 @@ export default function RecordScreen({ route, navigation }: Props) {
     };
   }, []);
 
+  // Error prevention: leaving mid-recording destroys the take. Intercept the
+  // back navigation and make the loss explicit instead of silent.
+  const recordingRef = useRef(false);
+  useEffect(() => {
+    recordingRef.current = recording;
+  }, [recording]);
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e) => {
+      if (!recordingRef.current) return;
+      e.preventDefault();
+      Alert.alert(
+        'Discard this recording?',
+        "You're still recording — leaving now throws this take away.",
+        [
+          { text: 'Keep recording', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+    return unsub;
+  }, [navigation]);
+
   // Expanding-ring pulse behind the button while recording, so it feels alive.
   useEffect(() => {
     if (!recording) {
@@ -125,6 +151,7 @@ export default function RecordScreen({ route, navigation }: Props) {
     if (durationSec < 5) {
       logWarn('Recording too short, discarded', { durationSec: Math.round(durationSec) });
       notifyWarning();
+      setElapsed(0); // the take is gone — don't leave a stale timer implying otherwise
       Alert.alert(
         'A little longer',
         'Try to speak for at least a few seconds so we can give useful feedback.'
@@ -186,6 +213,9 @@ export default function RecordScreen({ route, navigation }: Props) {
             <Pressable
               onPress={recording ? onStop : onStart}
               disabled={starting}
+              accessibilityRole="button"
+              accessibilityLabel={recording ? 'Stop recording' : 'Start recording'}
+              accessibilityState={{ busy: starting }}
               style={({ pressed }) => [
                 styles.recBtn,
                 recording && styles.recBtnActive,
@@ -196,8 +226,13 @@ export default function RecordScreen({ route, navigation }: Props) {
             </Pressable>
           </View>
           <Text style={styles.recLabel}>
-            {recording ? 'Tap to stop' : 'Tap to record'}
+            {starting ? 'Starting…' : recording ? 'Tap to stop' : 'Tap to record'}
           </Text>
+          {task ? (
+            <Text style={styles.targetLabel}>
+              Target {formatTime(task.suggestedSeconds)}
+            </Text>
+          ) : null}
         </View>
 
         <View>
@@ -290,6 +325,12 @@ const useStyles = makeStyles((colors) => ({
     fontWeight: '500',
     marginTop: spacing.lg,
   },
+  targetLabel: {
+    color: colors.textFaint,
+    fontSize: font.tiny,
+    fontVariant: ['tabular-nums'],
+    marginTop: 4,
+  },
   privacyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -298,7 +339,7 @@ const useStyles = makeStyles((colors) => ({
     paddingHorizontal: spacing.lg,
   },
   privacyNote: {
-    color: colors.textFaint,
+    color: colors.textMuted,
     fontSize: font.tiny,
     textAlign: 'center',
     lineHeight: 16,

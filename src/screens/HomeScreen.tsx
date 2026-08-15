@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -31,6 +31,18 @@ export default function HomeScreen({ navigation }: Props) {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    try {
+      const [p, s] = await Promise.all([getProfile(), getSessions()]);
+      setProfile(p);
+      setSessions(s);
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -73,6 +85,14 @@ export default function HomeScreen({ navigation }: Props) {
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: spacing.xxl }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.textMuted}
+              colors={[colors.primary]}
+            />
+          }
         >
           {/* Large-title header */}
           <View style={styles.headerRow}>
@@ -145,6 +165,8 @@ export default function HomeScreen({ navigation }: Props) {
 
               <Pressable
                 onPress={() => navigation.navigate('Report', { sessionId: latest.id })}
+                accessibilityRole="button"
+                accessibilityLabel="Open your latest report"
                 style={({ pressed }) => [styles.trendRow, pressed && { opacity: 0.7 }]}
               >
                 {trend != null && trend !== 0 ? (
@@ -194,6 +216,8 @@ export default function HomeScreen({ navigation }: Props) {
                     {i > 0 && <View style={styles.rowDivider} />}
                     <Pressable
                       onPress={() => navigation.navigate('Report', { sessionId: s.id })}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Report: ${s.taskPrompt}, score ${s.analysis.ci}`}
                       style={({ pressed }) => [styles.recentRow, pressed && styles.rowPressed]}
                     >
                       <View style={{ flex: 1, paddingRight: spacing.md }}>

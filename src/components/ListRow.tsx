@@ -22,6 +22,8 @@ export default function ListRow({ icon, tint, label, hint, onPress, destructive,
     <Pressable
       onPress={onPress}
       disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={hint ? `${label}. ${hint}` : label}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
       <View style={[styles.tile, { backgroundColor: tint + '1A' }]}>
