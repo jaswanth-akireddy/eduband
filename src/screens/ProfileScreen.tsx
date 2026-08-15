@@ -13,6 +13,7 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Avatar from '@/components/Avatar';
 import ListRow, { RowDivider } from '@/components/ListRow';
+import { selection } from '@/services/haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -119,7 +120,13 @@ export default function ProfileScreen({ navigation }: Props) {
               return (
                 <Pressable
                   key={opt.id}
-                  onPress={() => setScheme(opt.id)}
+                  onPress={() => {
+                    selection();
+                    setScheme(opt.id);
+                  }}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`${opt.label} theme`}
+                  accessibilityState={{ selected: active }}
                   style={[styles.segmentItem, active && styles.segmentItemActive]}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>

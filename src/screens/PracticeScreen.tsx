@@ -51,6 +51,8 @@ export default function PracticeScreen({ navigation }: Props) {
         <Pressable
           key={t.id}
           onPress={() => navigation.navigate('Record', { taskId: t.id })}
+          accessibilityRole="button"
+          accessibilityLabel={`Start task: ${t.prompt}`}
           style={({ pressed }) => [
             styles.taskCard,
             shadow.card,

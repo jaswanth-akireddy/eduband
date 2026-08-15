@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -23,6 +23,16 @@ export default function ProgressScreen({ navigation }: Props) {
   const colors = useColors();
   const styles = useStyles();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    try {
+      setSessions(await getSessions());
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -42,6 +52,14 @@ export default function ProgressScreen({ navigation }: Props) {
     <ScrollView
       contentContainerStyle={{ padding: 20, paddingBottom: spacing.xl }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.textMuted}
+          colors={[colors.primary]}
+        />
+      }
     >
       <Text style={styles.title}>Your progress</Text>
 
@@ -60,9 +78,15 @@ export default function ProgressScreen({ navigation }: Props) {
 
       <Text style={styles.subhead}>HISTORY</Text>
       {sessions.length === 0 && (
-        <Text style={styles.empty}>
-          No sessions yet. Record one from the Home tab to begin.
-        </Text>
+        <Card style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
+          <View style={styles.emptyBadge}>
+            <Icon name="chart" size={24} color={colors.accent} strokeWidth={2} />
+          </View>
+          <Text style={styles.emptyTitle}>No sessions yet</Text>
+          <Text style={styles.empty}>
+            Record one from the Home tab and your growth will show up here.
+          </Text>
+        </Card>
       )}
       {sessions.length > 0 && (
         <Card style={styles.histGroup}>
@@ -71,6 +95,8 @@ export default function ProgressScreen({ navigation }: Props) {
               {i > 0 && <View style={styles.histDivider} />}
               <Pressable
                 onPress={() => navigation.navigate('Report', { sessionId: s.id })}
+                accessibilityRole="button"
+                accessibilityLabel={`Report: ${s.taskPrompt}, score ${s.analysis.ci}`}
                 style={({ pressed }) => [styles.histRow, pressed && styles.histPressed]}
               >
                 <View style={{ flex: 1, paddingRight: spacing.md }}>
@@ -171,7 +197,28 @@ const useStyles = makeStyles((colors) => ({
     marginBottom: 10,
     marginLeft: 4,
   },
-  empty: { color: colors.textMuted, fontSize: font.body },
+  emptyBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: colors.accent + '14',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  emptyTitle: {
+    fontSize: font.h3,
+    fontWeight: weight.semibold,
+    color: colors.text,
+    marginBottom: 6,
+  },
+  empty: {
+    color: colors.textMuted,
+    fontSize: font.body,
+    lineHeight: 21,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+  },
   histGroup: { padding: 0, overflow: 'hidden' },
   histRow: {
     flexDirection: 'row',
