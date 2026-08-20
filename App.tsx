@@ -13,7 +13,7 @@ import {
   TeacherTabsParamList,
 } from '@/navigation/types';
 import { fontFamily, ThemeProvider, useColors, useTheme } from '@/theme';
-import { getProfile, getRole, hasValidConsent } from '@/storage/store';
+import { getRole, hasValidConsent, hydrateProfile } from '@/storage/store';
 import { loadCredentials } from '@/config';
 
 // San Francisco everywhere: set the SF Pro stack as the app-wide default so any
@@ -138,7 +138,8 @@ function AppContent() {
       await loadCredentials();
       const role = await getRole();
       if (role === 'student') {
-        const profile = await getProfile();
+        // hydrate: falls back to Supabase when this device has no local copy
+        const profile = await hydrateProfile();
         const consent = await hasValidConsent();
         if (profile && consent) setInitialRoute('Tabs');
         else if (profile) setInitialRoute('Consent');

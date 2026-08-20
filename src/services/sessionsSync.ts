@@ -5,13 +5,14 @@
 
 import { supabase } from '@/services/supabase';
 import { logError } from '@/services/logger';
-import { Role, Session } from '@/types';
+import { Role, Session, StudentProfile } from '@/types';
 
 export interface ProfileSeed {
   role: Role;
   fullName: string;
   level: string;
   language: string;
+  schoolCode?: string;
 }
 
 export function remoteEnabled(): boolean {
@@ -39,6 +40,7 @@ export async function upsertProfile(userId: string, seed: ProfileSeed): Promise<
     full_name: seed.fullName || 'EduBand user',
     level: seed.level || 'high',
     language: seed.language || 'English',
+    school_code: seed.schoolCode ?? null,
   });
   if (error) logError('Profile upsert failed', error.message);
 }
@@ -94,6 +96,30 @@ export async function remoteDeleteSession(id: string): Promise<void> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return;
   const { error } = await supabase.from('sessions').delete().eq('id', id);
   if (error) logError('Remote session delete failed', error.message);
+}
+
+// Read the signed-in user's profile back from Supabase. This is what makes a
+// name survive logout/reinstall/new device — the local store is only a cache.
+export async function remoteFetchProfile(
+  userId: string
+): Promise<StudentProfile | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('full_name, level, language, school_code')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) {
+    logError('Profile fetch failed', error.message);
+    return null;
+  }
+  if (!data?.full_name) return null;
+  return {
+    name: data.full_name as string,
+    level: (data.level as StudentProfile['level']) ?? 'high',
+    language: (data.language as string) ?? 'English',
+    schoolCode: (data.school_code as string) ?? '',
+  };
 }
 
 // Full remote wipe of a user's sessions (for the Privacy "delete all" action).
