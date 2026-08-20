@@ -10,6 +10,7 @@ import {
   currentUserId,
   remoteDeleteAllSessions,
   remoteDeleteSession,
+  remoteFetchProfile,
   remoteInsertSession,
   remoteListSessions,
   upsertProfile,
@@ -50,6 +51,28 @@ export async function getProfile(): Promise<StudentProfile | null> {
   return raw ? (JSON.parse(raw) as StudentProfile) : null;
 }
 
+// Restores the profile for a signed-in user when this device has no copy —
+// after logout, a reinstall, or on a new phone. Supabase is the source of
+// truth; AsyncStorage is just a cache, so without this the name was written
+// to the server and never read back, and looked like it was never stored.
+export async function hydrateProfile(): Promise<StudentProfile | null> {
+  const local = await getProfile();
+  if (local?.name) return local; // offline-first: a local profile always wins
+
+  const uid = await currentUserId();
+  if (!uid) return null;
+  try {
+    const remote = await withTimeout('load profile', remoteFetchProfile(uid), 6000);
+    if (!remote) return null;
+    await AsyncStorage.setItem(KEYS.profile, JSON.stringify(remote));
+    logEvent('Profile restored from Supabase', { name: remote.name });
+    return remote;
+  } catch (e) {
+    logWarn('Profile restore failed', e);
+    return null;
+  }
+}
+
 export async function saveProfile(p: StudentProfile): Promise<void> {
   await AsyncStorage.setItem(KEYS.profile, JSON.stringify(p));
   // Mirror to Supabase when signed in (sessions reference this profile row).
@@ -61,6 +84,7 @@ export async function saveProfile(p: StudentProfile): Promise<void> {
       fullName: p.name,
       level: p.level,
       language: p.language,
+      schoolCode: p.schoolCode,
     }).catch(() => {});
   }
 }
@@ -124,6 +148,7 @@ async function profileSeed(): Promise<ProfileSeed> {
     fullName: profile?.name ?? 'EduBand user',
     level: profile?.level ?? 'high',
     language: profile?.language ?? 'English',
+    schoolCode: profile?.schoolCode,
   };
 }
 

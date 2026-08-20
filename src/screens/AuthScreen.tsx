@@ -23,7 +23,7 @@ import {
   signInWithGoogle,
   signUpWithEmail,
 } from '@/services/auth';
-import { saveRole } from '@/storage/store';
+import { hasValidConsent, hydrateProfile, saveRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
@@ -47,12 +47,22 @@ export default function AuthScreen({ route, navigation }: Props) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Where to go after a successful login, by role.
-  function proceed() {
-    if (role === 'student') navigation.replace('Onboarding');
-    else if (role === 'teacher') navigation.replace('TeacherTabs', { screen: 'TeacherHome' });
-    else if (role === 'parent') navigation.replace('ParentPortal');
-    else navigation.replace('ProfessionalHome');
+  // Where to go after a successful login, by role. Students who already have a
+  // profile (restored from Supabase if this device is new) skip onboarding
+  // instead of being asked for their name again.
+  async function proceed() {
+    if (role === 'student') {
+      const profile = await hydrateProfile();
+      if (!profile) navigation.replace('Onboarding');
+      else if (await hasValidConsent()) navigation.replace('Tabs', { screen: 'Home' });
+      else navigation.replace('Consent');
+    } else if (role === 'teacher') {
+      navigation.replace('TeacherTabs', { screen: 'TeacherHome' });
+    } else if (role === 'parent') {
+      navigation.replace('ParentPortal');
+    } else {
+      navigation.replace('ProfessionalHome');
+    }
   }
 
   async function onEmailAuth() {
@@ -71,7 +81,7 @@ export default function AuthScreen({ route, navigation }: Props) {
       return;
     }
     await saveRole(role);
-    proceed();
+    await proceed();
   }
 
   async function onGoogle() {
@@ -83,13 +93,13 @@ export default function AuthScreen({ route, navigation }: Props) {
       return;
     }
     await saveRole(role);
-    proceed();
+    await proceed();
   }
 
   // When no backend is configured, let the user continue in local/demo mode.
   async function onContinueLocally() {
     await saveRole(role);
-    proceed();
+    await proceed();
   }
 
   return (
