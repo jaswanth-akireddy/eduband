@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, View } from 'react-native';
+import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -12,18 +12,11 @@ import {
   TabsParamList,
   TeacherTabsParamList,
 } from '@/navigation/types';
-import { fontFamily, ThemeProvider, useColors, useTheme } from '@/theme';
+import { useFonts } from 'expo-font';
+import { ThemeProvider, useColors, useTheme } from '@/theme';
+import { applyPoppins, poppinsFonts } from '@/theme/fonts';
 import { getRole, hasValidConsent, hydrateProfile } from '@/storage/store';
 import { loadCredentials } from '@/config';
-
-// San Francisco everywhere: set the SF Pro stack as the app-wide default so any
-// <Text>/<TextInput> without an explicit family inherits it.
-const TextAny = Text as any;
-const TextInputAny = TextInput as any;
-TextAny.defaultProps = TextAny.defaultProps || {};
-TextAny.defaultProps.style = [{ fontFamily }, TextAny.defaultProps.style];
-TextInputAny.defaultProps = TextInputAny.defaultProps || {};
-TextInputAny.defaultProps.style = [{ fontFamily }, TextInputAny.defaultProps.style];
 
 import RoleSelectScreen from '@/screens/RoleSelectScreen';
 import OnboardingScreen from '@/screens/OnboardingScreen';
@@ -127,7 +120,12 @@ export default function App() {
 
 function AppContent() {
   const { isDark, palette: colors } = useTheme();
+  const [fontsLoaded] = useFonts(poppinsFonts);
   const [loading, setLoading] = useState(true);
+
+  // Patch Text/TextInput as soon as the faces are available, so the very first
+  // frame is already Poppins (no flash of the system font).
+  if (fontsLoaded) applyPoppins();
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('RoleSelect');
 
   useEffect(() => {
@@ -158,7 +156,7 @@ function AppContent() {
     })();
   }, []);
 
-  if (loading) {
+  if (loading || !fontsLoaded) {
     return <LaunchScreen />;
   }
 

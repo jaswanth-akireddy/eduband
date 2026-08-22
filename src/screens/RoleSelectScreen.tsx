@@ -125,14 +125,14 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoText: { color: colors.white, fontSize: 34, fontWeight: '700', letterSpacing: -1 },
+  logoText: { color: colors.white, fontSize: 34, fontWeight: '700', letterSpacing: -0.5 },
   title: {
     fontSize: font.h1,
     fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
     marginTop: spacing.lg,
-    letterSpacing: -0.5,
+    letterSpacing: -0.25,
   },
   subtitle: {
     fontSize: font.body,
@@ -160,7 +160,7 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  cardTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.2 },
+  cardTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.1 },
   cardSub: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   footer: {
     color: colors.textFaint,

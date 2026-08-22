@@ -102,12 +102,12 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: font.h2, fontWeight: '700', color: colors.text, marginTop: spacing.sm, letterSpacing: -0.5 },
+  title: { fontSize: font.h2, fontWeight: '700', color: colors.text, marginTop: spacing.sm, letterSpacing: -0.25 },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
   scoreRow: { flexDirection: 'row', gap: spacing.md },
   scoreCard: { flex: 1 },
   scoreLabel: { fontSize: font.tiny, fontWeight: '700', color: colors.textMuted, letterSpacing: 0.5 },
-  bigScore: { fontSize: 40, fontWeight: '700', marginTop: 4, letterSpacing: -1 },
+  bigScore: { fontSize: 40, fontWeight: '700', marginTop: 4, letterSpacing: -0.5 },
   scoreHint: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   cardHead: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   item: { fontSize: font.small, color: colors.textMuted, lineHeight: 24 },

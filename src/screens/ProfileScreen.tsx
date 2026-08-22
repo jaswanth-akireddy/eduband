@@ -214,7 +214,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.h2,
     fontWeight: weight.semibold,
     color: colors.text,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     marginTop: spacing.md,
   },
   email: { fontSize: font.small, color: colors.textMuted, marginTop: 3 },
@@ -243,7 +243,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.body,
     fontWeight: weight.medium,
     color: colors.text,
-    letterSpacing: -0.1,
+    letterSpacing: -0.05,
   },
   segment: {
     flexDirection: 'row',

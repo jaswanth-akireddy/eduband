@@ -277,7 +277,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.h2,
     lineHeight: 30,
     fontWeight: '600',
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
   },
   hintRow: {
     flexDirection: 'row',

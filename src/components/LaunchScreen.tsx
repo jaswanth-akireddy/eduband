@@ -97,7 +97,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: 40,
     fontWeight: '800',
     color: colors.text,
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
   tagline: {
     fontSize: font.body,

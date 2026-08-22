@@ -222,7 +222,7 @@ function Field({
 const useStyles = makeStyles((colors) => ({
   back: { color: colors.textMuted, fontSize: font.small, fontWeight: '600', marginTop: spacing.sm },
   title: { fontSize: font.h3, fontWeight: '500', color: colors.textMuted, marginTop: spacing.lg },
-  roleTitle: { fontSize: font.hero, fontWeight: '700', color: colors.text, letterSpacing: -0.8, marginBottom: spacing.lg },
+  roleTitle: { fontSize: font.hero, fontWeight: '700', color: colors.text, letterSpacing: -0.4, marginBottom: spacing.lg },
   warnHead: { color: colors.mid, fontWeight: '700', fontSize: font.body },
   warnText: { color: colors.textMuted, fontSize: font.small, lineHeight: 20, marginTop: 4 },
   label: { color: colors.textMuted, fontSize: font.small, fontWeight: '600', marginBottom: spacing.xs },

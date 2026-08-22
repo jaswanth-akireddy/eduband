@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
 import { scoreBand, scoreColor, useColors } from '@/theme';
+import { POPPINS_REGULAR } from '@/theme/fonts';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
@@ -85,8 +86,8 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         x={CX}
         y={CY + 2}
         fontSize={60}
-        fontWeight="700"
-        letterSpacing={-2}
+        fontFamily="Poppins_700Bold"
+        letterSpacing={-1}
         fill={colors.text}
         textAnchor="middle"
       >
@@ -96,7 +97,7 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         x={CX}
         y={CY + 30}
         fontSize={13}
-        fontWeight="600"
+        fontFamily="Poppins_500Medium"
         fill={colors.textMuted}
         textAnchor="middle"
       >
@@ -108,17 +109,17 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         x={CX}
         y={CY + 61}
         fontSize={13}
-        fontWeight="700"
+        fontFamily="Poppins_600SemiBold"
         fill={color}
         textAnchor="middle"
       >
         {band}
       </SvgText>
       {/* End ticks */}
-      <SvgText x={t0x} y={tickY} fontSize={11} fontWeight="600" fill={colors.textFaint} textAnchor="middle">
+      <SvgText x={t0x} y={tickY} fontSize={11} fontFamily={POPPINS_REGULAR} fill={colors.textFaint} textAnchor="middle">
         0
       </SvgText>
-      <SvgText x={t1x} y={tickY} fontSize={11} fontWeight="600" fill={colors.textFaint} textAnchor="middle">
+      <SvgText x={t1x} y={tickY} fontSize={11} fontFamily={POPPINS_REGULAR} fill={colors.textFaint} textAnchor="middle">
         100
       </SvgText>
     </Svg>

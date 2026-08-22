@@ -161,7 +161,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.h1,
     fontWeight: weight.bold,
     color: colors.text,
-    letterSpacing: -0.6,
+    letterSpacing: -0.3,
     marginBottom: spacing.md,
   },
   cardLabel: {
@@ -184,7 +184,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.h2,
     fontWeight: weight.semibold,
     color: colors.text,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     fontVariant: ['tabular-nums'],
   },
   statLabel: { fontSize: font.tiny, color: colors.textMuted, marginTop: 3 },
@@ -232,7 +232,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.body,
     fontWeight: weight.medium,
     color: colors.text,
-    letterSpacing: -0.1,
+    letterSpacing: -0.05,
   },
   histDate: { fontSize: font.small, color: colors.textMuted, marginTop: 2 },
   histScoreText: {

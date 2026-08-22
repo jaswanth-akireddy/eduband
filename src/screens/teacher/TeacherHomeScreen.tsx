@@ -113,7 +113,7 @@ function timeAgo(ms: number): string {
 }
 
 const useStyles = makeStyles((colors) => ({
-  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
+  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.25 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.sm },
   attachCard: { borderStyle: 'dashed' as const, marginTop: spacing.md },
   attachTitle: { fontSize: font.body, fontWeight: '700', color: colors.text },
