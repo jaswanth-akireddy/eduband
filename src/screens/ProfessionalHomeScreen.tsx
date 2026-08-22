@@ -71,7 +71,7 @@ export default function ProfessionalHomeScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
+  hi: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.25 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2 },
   section: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginTop: spacing.lg, marginBottom: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: spacing.md },

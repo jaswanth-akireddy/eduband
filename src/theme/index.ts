@@ -5,7 +5,6 @@
 // muted captions); colour is used with restraint — neutrals dominate and the
 // Rausch coral appears only on primary actions and active states.
 
-import { Platform } from 'react-native';
 import { PillarId } from '@/types';
 
 // Light palette (default).
@@ -135,13 +134,9 @@ export const radius = {
   pill: 999,
 };
 
-// San Francisco on iOS; Roboto on Android; SF stack on web.
-export const fontFamily = Platform.select({
-  ios: 'System',
-  android: 'sans-serif',
-  default:
-    '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-}) as string;
+// Poppins app-wide. Weights resolve to their own families via the Text patch
+// in theme/fonts.tsx (Android ignores fontWeight on custom fonts).
+export const fontFamily = 'Poppins_400Regular';
 
 // Apple-HIG-adjacent scale. One hero/large-title per screen; everything else
 // steps down decisively so hierarchy comes from type, not from boldness.

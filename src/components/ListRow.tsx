@@ -60,7 +60,7 @@ const useStyles = makeStyles((colors) => ({
     marginRight: 12,
   },
   body: { flex: 1 },
-  label: { fontSize: font.body, fontWeight: weight.medium, color: colors.text, letterSpacing: -0.1 },
+  label: { fontSize: font.body, fontWeight: weight.medium, color: colors.text, letterSpacing: -0.05 },
   hint: { fontSize: font.small, color: colors.textMuted, marginTop: 1 },
   divider: { height: 1, backgroundColor: colors.line, marginLeft: 60 },
 }));

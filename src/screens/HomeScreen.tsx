@@ -298,7 +298,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.hero,
     fontWeight: weight.bold,
     color: colors.text,
-    letterSpacing: -0.8,
+    letterSpacing: -0.4,
   },
 
   overline: {
@@ -317,7 +317,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: 32,
     fontWeight: weight.bold,
     color: colors.text,
-    letterSpacing: -1,
+    letterSpacing: -0.5,
     lineHeight: 36,
   },
   bandPill: {
@@ -403,7 +403,7 @@ const useStyles = makeStyles((colors) => ({
     color: colors.text,
     fontSize: font.body,
     fontWeight: weight.medium,
-    letterSpacing: -0.1,
+    letterSpacing: -0.05,
   },
   recentDate: { color: colors.textMuted, fontSize: font.small, marginTop: 2 },
   recentScore: {

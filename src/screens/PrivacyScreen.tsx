@@ -190,7 +190,7 @@ function Promise({ text }: { text: string }) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.6 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.3 },
   actionsGroup: { padding: 0, overflow: 'hidden' },
   sub: {
     fontSize: font.body,

@@ -90,6 +90,6 @@ const useStyles = makeStyles((colors) => ({
     fontFamily,
     fontSize: 16,
     fontWeight: weight.semibold,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
   },
 }));

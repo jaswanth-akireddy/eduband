@@ -131,7 +131,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.hero,
     fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.8,
+    letterSpacing: -0.4,
     marginTop: spacing.xl,
   },
   tagline: {

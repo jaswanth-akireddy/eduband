@@ -63,7 +63,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.25 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
   indexTitle: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
   goodNews: { color: colors.good, fontSize: font.small, fontWeight: '700', marginTop: spacing.md },

@@ -194,7 +194,7 @@ function Field({
 }
 
 const useStyles = makeStyles((colors) => ({
-  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.5 },
+  title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.25 },
   sub: { fontSize: font.small, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.md, lineHeight: 20 },
   modePill: {
     alignSelf: 'flex-start',

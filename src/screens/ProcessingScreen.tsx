@@ -135,7 +135,7 @@ const useStyles = makeStyles((colors) => ({
     color: colors.text,
     fontSize: font.h2,
     fontWeight: '600',
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     marginTop: spacing.xl,
   },
   step: {

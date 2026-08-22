@@ -78,7 +78,7 @@ const useStyles = makeStyles((colors) => ({
   value: {
     color: colors.text,
     fontWeight: '600',
-    letterSpacing: -0.5,
+    letterSpacing: -0.25,
     includeFontPadding: false,
     textAlignVertical: 'center',
     fontVariant: ['tabular-nums'],

@@ -101,7 +101,7 @@ const useStyles = makeStyles((colors) => ({
     fontSize: font.h1,
     fontWeight: weight.bold,
     color: colors.text,
-    letterSpacing: -0.6,
+    letterSpacing: -0.3,
   },
   sub: {
     fontSize: font.body,
@@ -125,7 +125,7 @@ const useStyles = makeStyles((colors) => ({
     color: colors.text,
     lineHeight: 22,
     fontWeight: weight.semibold,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
     paddingRight: spacing.sm,
   },
   tagRow: {

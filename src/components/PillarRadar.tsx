@@ -123,7 +123,7 @@ export default function PillarRadar({ pillars, size = 280 }: Props) {
               x={pt.x}
               y={pt.y}
               fontSize={11}
-              fontWeight="700"
+              fontFamily="Poppins_600SemiBold"
               fill={pillarColor(p.id)}
               textAnchor={anchor as any}
             >
