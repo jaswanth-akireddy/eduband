@@ -223,7 +223,7 @@ const useStyles = makeStyles((colors) => ({
   back: { color: colors.textMuted, fontSize: font.small, fontWeight: '600', marginTop: spacing.sm },
   title: { fontSize: font.h3, fontWeight: '500', color: colors.textMuted, marginTop: spacing.lg },
   roleTitle: { fontSize: font.hero, fontWeight: '700', color: colors.text, letterSpacing: -0.4, marginBottom: spacing.lg },
-  warnHead: { color: colors.mid, fontWeight: '700', fontSize: font.body },
+  warnHead: { color: colors.midText, fontWeight: '700', fontSize: font.body },
   warnText: { color: colors.textMuted, fontSize: font.small, lineHeight: 20, marginTop: 4 },
   label: { color: colors.textMuted, fontSize: font.small, fontWeight: '600', marginBottom: spacing.xs },
   input: {
@@ -249,5 +249,5 @@ const useStyles = makeStyles((colors) => ({
   },
   googleG: { color: '#4285F4', fontWeight: '700', fontSize: font.h3, marginRight: spacing.sm },
   googleText: { color: colors.text, fontWeight: '600', fontSize: font.body },
-  switch: { color: colors.primary, textAlign: 'center', marginTop: spacing.lg, fontSize: font.small, fontWeight: '600' },
+  switch: { color: colors.primaryText, textAlign: 'center', marginTop: spacing.lg, fontSize: font.small, fontWeight: '600' },
 }));

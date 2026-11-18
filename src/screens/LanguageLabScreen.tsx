@@ -110,7 +110,7 @@ const useStyles = makeStyles((colors) => ({
   deviceName: { fontSize: font.body, fontWeight: '700', color: colors.text },
   statusRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.good, marginRight: 6 },
-  statusText: { fontSize: font.small, color: colors.good, fontWeight: '600' },
+  statusText: { fontSize: font.small, color: colors.goodText, fontWeight: '600' },
   syncText: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   todayRow: { flexDirection: 'row', alignItems: 'center' },
   todayLabel: { fontSize: font.small, color: colors.textMuted, fontWeight: '700' },

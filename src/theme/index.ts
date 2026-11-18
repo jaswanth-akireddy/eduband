@@ -24,8 +24,8 @@ export const lightColors = {
   text: '#1B1B1F', // near-black ink, slightly cool
   // Legacy alias: older screens use *OnDark tokens as their page text.
   textOnDark: '#1B1B1F',
-  textMuted: '#71717A', // secondary label
-  textFaint: '#AFAFB8', // tertiary label
+  textMuted: '#71717A', // secondary label — 4.83:1 on surface
+  textFaint: '#70707E', // tertiary label — 4.87:1 on surface, 4.52:1 on bg
   textMutedOnDark: '#71717A',
   line: 'rgba(17, 17, 26, 0.06)', // hairline separators
   border: '#E4E4E9',
@@ -34,17 +34,34 @@ export const lightColors = {
   blue: '#0E8488',
   violet: '#FF385C',
   pink: '#F1244D',
-  primary: '#FF385C',
+  primary: '#FF385C', // 3.52:1 on surface — graphics only, never under text
+  // The deepest-but-still-Rausch value that gives a white label 4.5:1. Used as
+  // the primary button fill and as Rausch-as-text (links, inline emphasis).
+  // #FF385C cannot carry white text at AA at any weight below ~19px bold, and
+  // a 19px button label is a worse trade than a slightly deeper red.
+  primaryStrong: '#E30029', // white on this: 4.89:1
+  primaryText: '#E30029', // same value, named for the text call sites
   primaryDark: '#E0284C',
   iridescent: ['#FF455F', '#FF385C', '#F1244D'] as [string, string, string],
-  accent: '#0E8488',
+  accent: '#0E8488', // 4.49:1 on surface
+  accentText: '#0D7D81', // 4.92:1 on surface, 4.56:1 on bg
 
   // Score bands — calm, legible semantics (never neon, never shaming).
-  good: '#188A4C',
+  //
+  // Each band is split in two because WCAG holds text and graphics to
+  // different thresholds: a fill or ring stroke needs 3:1, the same colour as
+  // *text* needs 4.5:1. Using one value for both means either illegible labels
+  // or needlessly muddy charts. So `good`/`mid`/`low` paint; `*Text` label.
+  // `mid` is the one fill that had to move: #E8930C was 2.44:1 on white, below
+  // even the 3:1 graphic floor.
+  good: '#188A4C', // 4.39:1 on surface
+  goodText: '#168147', // 4.92:1 on surface, 4.56:1 on bg
   goodGradient: ['#2BB673', '#188A4C'] as [string, string],
-  mid: '#E8930C',
-  midGradient: ['#F5A623', '#E8930C'] as [string, string],
-  low: '#E5484D',
+  mid: '#C77E0A', // 3.27:1 on surface (was #E8930C, 2.44:1)
+  midText: '#9E6408', // 4.91:1 on surface, 4.55:1 on bg
+  midGradient: ['#E8930C', '#C77E0A'] as [string, string],
+  low: '#E5484D', // 3.91:1 on surface
+  lowText: '#DD1F25', // 4.89:1 on surface, 4.53:1 on bg
   lowGradient: ['#F2555A', '#D93036'] as [string, string],
 
   white: '#FFFFFF',
@@ -79,15 +96,27 @@ export const darkColors: Palette = {
 
   text: '#F4F4F6',
   textOnDark: '#F4F4F6',
-  textMuted: '#9E9EA7',
-  textFaint: '#5E5E67',
+  textMuted: '#9E9EA7', // 6.52:1 on surface
+  textFaint: '#8A8A94', // 5.07:1 on surface, 5.71:1 on bg (was #5E5E67, 2.70:1)
   textMutedOnDark: '#9E9EA7',
   line: 'rgba(255, 255, 255, 0.07)',
   border: '#33333B',
 
-  good: '#34C77B',
-  mid: '#F5A623',
-  low: '#F2555A',
+  // On the dark canvas the vivid band colours already clear 4.5:1, so text and
+  // graphic variants are the same value here. The split only has to bite in
+  // light mode, where white surfaces leave no headroom.
+  good: '#34C77B', // 7.92:1 on surface
+  goodText: '#34C77B',
+  mid: '#F5A623', // 8.55:1
+  midText: '#F5A623',
+  low: '#F2555A', // 5.13:1
+  lowText: '#F2555A',
+  primaryText: '#FF385C', // 4.93:1 on the dark surface, so no deepening needed
+  // On dark, white-on-Rausch is the one pair that still needs the deeper fill:
+  // white on #FF385C is 3.52:1 regardless of what sits behind the button.
+  primaryStrong: '#E30029',
+  accentText: '#2BB7BC', // 7.09:1
+  midGradient: ['#F5A623', '#E8930C'] as [string, string],
 
   white: '#FFFFFF',
   shadow: 'rgba(0, 0, 0, 0.55)',

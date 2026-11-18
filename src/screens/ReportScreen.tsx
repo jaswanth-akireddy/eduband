@@ -332,7 +332,7 @@ const useStyles = makeStyles((colors) => ({
   barFill: { height: 8, borderRadius: radius.pill },
   pillarScore: { width: 28, textAlign: 'right', fontWeight: '700', fontSize: font.small },
   bulletRow: { flexDirection: 'row', marginBottom: spacing.sm },
-  check: { color: colors.good, fontWeight: '700', marginRight: spacing.sm },
+  check: { color: colors.goodText, fontWeight: '700', marginRight: spacing.sm },
   bulletText: { flex: 1, color: colors.text, fontSize: font.body, lineHeight: 22 },
   focusHeading: {
     fontSize: font.tiny,
@@ -372,7 +372,7 @@ const useStyles = makeStyles((colors) => ({
   tipLabel: {
     fontSize: font.tiny,
     fontWeight: '700',
-    color: colors.primary,
+    color: colors.primaryText,
     marginBottom: 4,
     textTransform: 'uppercase',
   },

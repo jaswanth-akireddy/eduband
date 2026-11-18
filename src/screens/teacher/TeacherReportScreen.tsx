@@ -55,7 +55,7 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
 
         {/* Covered well */}
         <Card>
-          <Text style={[styles.cardHead, { color: colors.good }]}>✓ Covered well</Text>
+          <Text style={[styles.cardHead, { color: colors.goodText }]}>✓ Covered well</Text>
           {coverage.coveredWell.map((t, i) => (
             <Text key={i} style={styles.item}>•  {t}</Text>
           ))}
@@ -63,7 +63,7 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
 
         {/* Missed / skipped */}
         <Card>
-          <Text style={[styles.cardHead, { color: colors.mid }]}>⚠ Missed / skipped</Text>
+          <Text style={[styles.cardHead, { color: colors.midText }]}>⚠ Missed / skipped</Text>
           {coverage.missedOrSkipped.map((t, i) => (
             <Text key={i} style={styles.item}>•  {t}</Text>
           ))}

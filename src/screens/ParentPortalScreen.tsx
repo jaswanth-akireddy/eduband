@@ -35,7 +35,7 @@ export default function ParentPortalScreen({ navigation }: Props) {
           </Card>
 
           <Card>
-            <Text style={[styles.head, { color: colors.good }]}>Doing well</Text>
+            <Text style={[styles.head, { color: colors.goodText }]}>Doing well</Text>
             <Text style={styles.item}>Clear articulation and a rich vocabulary.</Text>
             <Text style={styles.item}>Growing in confidence when speaking.</Text>
           </Card>
@@ -66,7 +66,7 @@ const useStyles = makeStyles((colors) => ({
   title: { fontSize: font.h1, fontWeight: '700', color: colors.text, letterSpacing: -0.25 },
   sub: { fontSize: font.body, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
   indexTitle: { fontSize: font.h3, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
-  goodNews: { color: colors.good, fontSize: font.small, fontWeight: '700', marginTop: spacing.md },
+  goodNews: { color: colors.goodText, fontSize: font.small, fontWeight: '700', marginTop: spacing.md },
   head: { fontSize: font.h3, fontWeight: '700', marginBottom: spacing.sm },
   item: { fontSize: font.body, color: colors.textMuted, lineHeight: 24 },
   tip: { fontSize: font.body, color: colors.text, lineHeight: 28, fontWeight: '500' },

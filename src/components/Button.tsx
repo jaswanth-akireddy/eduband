@@ -38,13 +38,18 @@ export default function Button({
   const contentColor = isPrimary
     ? colors.white
     : isGhost
-      ? colors.primary
+      ? colors.primaryText
       : colors.text;
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      // Without this a screen reader announces a disabled or mid-submit button
+      // as an ordinary one, so the user taps a control that cannot respond.
+      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
       style={({ pressed }) => [
         styles.base,
         isPrimary && styles.primary,
@@ -79,7 +84,7 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  primary: { backgroundColor: colors.primary },
+  primary: { backgroundColor: colors.primaryStrong },
   secondary: { backgroundColor: colors.surfaceAlt },
   ghost: { backgroundColor: 'transparent', minHeight: 44 },
   disabled: { opacity: 0.35 },

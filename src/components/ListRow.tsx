@@ -30,7 +30,7 @@ export default function ListRow({ icon, tint, label, hint, onPress, destructive,
         <Icon name={icon} size={18} color={tint} strokeWidth={1.9} />
       </View>
       <View style={styles.body}>
-        <Text style={[styles.label, destructive && { color: colors.low }]}>{label}</Text>
+        <Text style={[styles.label, destructive && { color: colors.lowText }]}>{label}</Text>
         {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       </View>
       {right ?? (onPress ? <Icon name="chevronRight" size={16} color={colors.textFaint} /> : null)}
