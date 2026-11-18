@@ -17,7 +17,10 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20: `eas-version: latest` resolves to an eas-cli whose
+          # transitive @oclif/plugin-autocomplete requires node >=22, so the
+          # CLI install aborts on 20 before any project step runs.
+          node-version: 22
           cache: npm
 
       - name: Set up EAS
@@ -33,4 +36,4 @@ jobs:
         run: eas build --platform android --profile preview --non-interactive --no-wait
 
       - name: Where to download
-        run: echo "Build queued. Download the APK from https://expo.dev/accounts/<your-account>/projects/eduband/builds"
+        run: echo "Build queued. Download the APK from https://expo.dev/accounts/jash_001/projects/eduband/builds"
