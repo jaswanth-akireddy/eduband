@@ -10,3 +10,6 @@ npm-debug.*
 *.orig.*
 ios/
 android/
+
+# ux-ui-agent-skills kit: generated gate receipts
+.ds-receipts/
