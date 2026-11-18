@@ -64,6 +64,15 @@ export const lightColors = {
   lowText: '#DD1F25', // 4.89:1 on surface, 4.53:1 on bg
   lowGradient: ['#F2555A', '#D93036'] as [string, string],
 
+  // Role hues. Four deliberately separated hues so the role list reads as a
+  // set, not a gradient. These replace the old blue/violet/pink aliases, whose
+  // names had drifted from their values (`violet` was #FF385C), which is why
+  // the four role tiles came out as two teals and two reds.
+  roleStudent: '#0E8488', // 4.49:1 on surface
+  roleTeacher: '#5B5BD6', // 5.37:1
+  roleParent: '#C2306E', // 5.33:1
+  rolePro: '#B06A00', // 4.28:1
+
   white: '#FFFFFF',
   glow: 'rgba(255, 56, 92, 0.22)',
   shadow: 'rgba(17, 17, 26, 0.08)',
@@ -116,6 +125,13 @@ export const darkColors: Palette = {
   // white on #FF385C is 3.52:1 regardless of what sits behind the button.
   primaryStrong: '#E30029',
   accentText: '#2BB7BC', // 7.09:1
+
+  // Same four hues, lifted for the graphite canvas. At their light values
+  // indigo and rose sit at ~3.2:1 here, which passes but reads muddy.
+  roleStudent: '#109297', // 4.60:1 on surface
+  roleTeacher: '#7A7ADE', // 4.67:1
+  roleParent: '#D6588D', // 4.65:1
+  rolePro: '#BE7300', // 4.65:1
   midGradient: ['#F5A623', '#E8930C'] as [string, string],
 
   white: '#FFFFFF',

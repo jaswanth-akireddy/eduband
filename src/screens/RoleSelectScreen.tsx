@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { Role } from '@/types';
-import { colors, font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
+import { font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
 import { saveRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Icon, { IconName } from '@/components/Icon';
@@ -18,37 +18,43 @@ interface RoleCard {
   icon: IconName;
   title: string;
   subtitle: string;
-  tint: string;
+  tintKey: 'roleStudent' | 'roleTeacher' | 'roleParent' | 'rolePro';
 }
 
+// Subtitles are kept to one line at 390pt on purpose. When one of the four
+// wrapped and the others did not, that card came out visibly shorter and the
+// list lost its rhythm.
+//
+// Icons name the person, not the action: `waveform` used to mark Teacher, but
+// it means "recording" on every other screen, and students record too.
 const ROLES: RoleCard[] = [
   {
     role: 'student',
     icon: 'book',
     title: 'Student',
-    subtitle: 'Record, practise & track your speaking',
-    tint: colors.blue,
+    subtitle: 'Practise and track your speaking',
+    tintKey: 'roleStudent',
   },
   {
     role: 'teacher',
-    icon: 'waveform',
+    icon: 'doc',
     title: 'Teacher',
-    subtitle: 'Analyse your teaching & content',
-    tint: colors.violet,
+    subtitle: 'Analyse your teaching and content',
+    tintKey: 'roleTeacher',
   },
   {
     role: 'parent',
     icon: 'person',
     title: 'Parent',
-    subtitle: "See your child's communication insights",
-    tint: colors.pink,
+    subtitle: "Follow your child's progress",
+    tintKey: 'roleParent',
   },
   {
     role: 'professional',
     icon: 'target',
     title: 'Professional',
-    subtitle: 'Interview, presentation & workplace prep',
-    tint: colors.accent,
+    subtitle: 'Interview and presentation prep',
+    tintKey: 'rolePro',
   },
 ];
 
@@ -78,21 +84,28 @@ export default function RoleSelectScreen({ navigation }: Props) {
           </View>
 
           <Text style={styles.title}>Welcome to EduBand</Text>
-          <Text style={styles.subtitle}>How will you be using EduBand?</Text>
+          <Text style={styles.subtitle}>How will you be using it?</Text>
 
           <View style={styles.cards}>
-            {ROLES.map((r) => (
+            {ROLES.map((r) => {
+              // Resolved here, not at module scope: ROLES used to bake in the
+              // static light palette, so the tiles kept their light tints in
+              // dark mode.
+              const tint = colors[r.tintKey];
+              return (
               <Pressable
                 key={r.role}
                 onPress={() => pick(r.role)}
+                accessibilityRole="button"
+                accessibilityLabel={`Continue as ${r.title}. ${r.subtitle}`}
                 style={({ pressed }) => [
                   styles.card,
                   shadow.card,
                   pressed && styles.pressed,
                 ]}
               >
-                <View style={[styles.iconCircle, { backgroundColor: r.tint + '16' }]}>
-                  <Icon name={r.icon} size={22} color={r.tint} strokeWidth={1.9} />
+                <View style={[styles.iconCircle, { backgroundColor: tint + '16' }]}>
+                  <Icon name={r.icon} size={22} color={tint} strokeWidth={1.9} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle}>{r.title}</Text>
@@ -100,15 +113,25 @@ export default function RoleSelectScreen({ navigation }: Props) {
                 </View>
                 <Icon name="chevronRight" size={16} color={colors.textFaint} />
               </Pressable>
-            ))}
+              );
+            })}
           </View>
 
           <Text style={styles.footer}>
             You can switch roles anytime from your profile.
           </Text>
-          <Text style={styles.devLink} onPress={() => navigation.navigate('ApiKeys')}>
-            Developer settings
-          </Text>
+          {/* Shipped builds should not offer an API-key screen to a student. */}
+          {__DEV__ ? (
+            <Pressable
+              onPress={() => navigation.navigate('ApiKeys')}
+              accessibilityRole="button"
+              accessibilityLabel="Developer settings"
+              hitSlop={12}
+              style={styles.devLinkHit}
+            >
+              <Text style={styles.devLink}>Developer settings</Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -168,11 +191,11 @@ const useStyles = makeStyles((colors) => ({
     textAlign: 'center',
     marginTop: spacing.xl,
   },
+  devLinkHit: { alignSelf: 'center', minHeight: 44, justifyContent: 'center' },
   devLink: {
     color: colors.textMuted,
     fontSize: font.small,
     fontWeight: '500',
     textAlign: 'center',
-    marginTop: spacing.md,
   },
 }));
