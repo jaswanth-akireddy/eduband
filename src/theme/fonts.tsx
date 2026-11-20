@@ -59,21 +59,35 @@ export function applyPoppins(): void {
   if (patched) return;
   patched = true;
 
+  // Rewrite the props going IN to render, never the element coming OUT.
+  //
+  // The first version cloned the returned element, which was wrong on both
+  // platforms in different ways:
+  //  - Native: a top-level Text renders <TextAncestor.Provider><NativeText/>.
+  //    The clone put `style` on the Context Provider, which ignores it, so the
+  //    patch silently did nothing and the app shipped in the system font.
+  //  - Web: the returned element is a DOM <span> whose style is already a
+  //    resolved object. Cloning a style *array* onto it threw ("Failed to set
+  //    an indexed property on CSSStyleDeclaration") and unmounted the tree.
+  // Text forwards `style` to its host node on every platform, so changing the
+  // input is the one place the fix reaches what actually draws the glyphs.
   for (const Component of [Text, TextInput] as unknown as {
-    render?: (...args: unknown[]) => React.ReactElement;
+    render?: (props: Record<string, unknown>, ref: unknown) => React.ReactElement;
   }[]) {
     const original = Component.render;
     if (typeof original !== 'function') continue;
-    Component.render = function patchedRender(...args: unknown[]) {
-      const element = original.apply(this, args);
+    Component.render = function patchedRender(props, ref) {
+      let next = props;
       try {
-        const style = (element.props as { style?: unknown }).style;
-        return React.cloneElement(element, {
+        const style = props?.style;
+        next = {
+          ...props,
           style: [style, { fontFamily: familyFor(style), fontWeight: undefined }],
-        } as never);
+        };
       } catch {
-        return element; // never let typography break rendering
+        next = props; // never let typography break rendering
       }
+      return original.call(this, next, ref);
     };
   }
 }

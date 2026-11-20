@@ -137,6 +137,12 @@ async function readSessionsCache(): Promise<Session[]> {
   return list.sort((a, b) => b.createdAt - a.createdAt);
 }
 
+// Device cache only, never the network. Lets a screen paint what the student
+// already has immediately, then reconcile with getSessions() in the background.
+export function getCachedSessions(): Promise<Session[]> {
+  return readSessionsCache();
+}
+
 async function writeSessionsCache(list: Session[]): Promise<void> {
   await AsyncStorage.setItem(KEYS.sessions, JSON.stringify(list));
 }

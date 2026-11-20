@@ -8,7 +8,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
 import { font, makeStyles, pillarColor, scoreBand, scoreColor, spacing, useColors, weight } from '@/theme';
-import { getProfile, getSessions } from '@/storage/store';
+import { getCachedSessions, getProfile, getSessions } from '@/storage/store';
 import { currentUserId, subscribeSessions } from '@/services/sessionsSync';
 import { PillarId, Session, StudentProfile } from '@/types';
 import { pillarDef } from '@/analysis/framework';
@@ -18,6 +18,7 @@ import Button from '@/components/Button';
 import MetricRing from '@/components/MetricRing';
 import Avatar from '@/components/Avatar';
 import Skeleton from '@/components/Skeleton';
+import { logError } from '@/services/logger';
 import Icon from '@/components/Icon';
 import FadeIn from '@/components/FadeIn';
 import AnimatedNumber from '@/components/AnimatedNumber';
@@ -49,10 +50,25 @@ export default function HomeScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        const [p, s] = await Promise.all([getProfile(), getSessions()]);
-        setProfile(p);
-        setSessions(s);
-        setLoaded(true);
+        try {
+          // Paint from the device first. Only hold the skeleton when there is
+          // nothing cached, so a new device does not flash an empty state
+          // before its sessions arrive.
+          const [p, cached] = await Promise.all([getProfile(), getCachedSessions()]);
+          setProfile(p);
+          if (cached.length > 0) {
+            setSessions(cached);
+            setLoaded(true);
+          }
+          // Then reconcile with the server (bounded, falls back to cache).
+          setSessions(await getSessions());
+        } catch (e) {
+          logError('Home failed to load', e);
+        } finally {
+          // Always leave the skeleton. Before, any rejection in the chain
+          // skipped this line and the skeleton stayed up indefinitely.
+          setLoaded(true);
+        }
       })();
     }, [])
   );

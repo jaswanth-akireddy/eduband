@@ -43,6 +43,7 @@ import ProfileScreen from '@/screens/ProfileScreen';
 import LaunchScreen from '@/components/LaunchScreen';
 import AuthScreen from '@/screens/AuthScreen';
 import DebugLogPanel from '@/components/DebugLogPanel';
+import { logError } from '@/services/logger';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabsParamList>();
@@ -133,26 +134,33 @@ function AppContent() {
       // Keep the launch screen up for a beat so opening the app feels deliberate,
       // while the real boot work runs in parallel.
       const minSplash = new Promise((r) => setTimeout(r, 1500));
-      await loadCredentials();
-      const role = await getRole();
-      if (role === 'student') {
-        // hydrate: falls back to Supabase when this device has no local copy
-        const profile = await hydrateProfile();
-        const consent = await hasValidConsent();
-        if (profile && consent) setInitialRoute('Tabs');
-        else if (profile) setInitialRoute('Consent');
-        else setInitialRoute('Onboarding');
-      } else if (role === 'teacher') {
-        setInitialRoute('TeacherTabs');
-      } else if (role === 'parent') {
-        setInitialRoute('ParentPortal');
-      } else if (role === 'professional') {
-        setInitialRoute('ProfessionalHome');
-      } else {
-        setInitialRoute('RoleSelect');
+      try {
+        await loadCredentials();
+        const role = await getRole();
+        if (role === 'student') {
+          // hydrate: falls back to Supabase when this device has no local copy
+          const profile = await hydrateProfile();
+          const consent = await hasValidConsent();
+          if (profile && consent) setInitialRoute('Tabs');
+          else if (profile) setInitialRoute('Consent');
+          else setInitialRoute('Onboarding');
+        } else if (role === 'teacher') {
+          setInitialRoute('TeacherTabs');
+        } else if (role === 'parent') {
+          setInitialRoute('ParentPortal');
+        } else if (role === 'professional') {
+          setInitialRoute('ProfessionalHome');
+        } else {
+          setInitialRoute('RoleSelect');
+        }
+      } catch (e) {
+        // Fall through to whatever route was resolved so far (RoleSelect by
+        // default) rather than leaving the launch screen up forever.
+        logError('Boot routing failed', e);
+      } finally {
+        await minSplash;
+        setLoading(false);
       }
-      await minSplash;
-      setLoading(false);
     })();
   }, []);
 

@@ -85,10 +85,20 @@ export function useLogs(): LogEntry[] {
 // Wrap an await so a hung native call (AsyncStorage, Audio permission, etc.)
 // surfaces as a visible error instead of an infinite spinner. Logs which step
 // stalled so the on-device panel pinpoints exactly where the flow is stuck.
-export function withTimeout<T>(label: string, promise: Promise<T>, ms: number): Promise<T> {
+// `severity: 'warn'` is for timeouts that are an expected, handled fallback
+// (e.g. offline auth falling back to cache). Errors surface the debug pill in
+// release builds, and a student with no signal should not see a red badge for
+// the app doing exactly what it was designed to do.
+export function withTimeout<T>(
+  label: string,
+  promise: Promise<T>,
+  ms: number,
+  severity: 'error' | 'warn' = 'error'
+): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const id = setTimeout(() => {
-      logError(`Timed out: ${label}`, `no response after ${ms}ms`);
+      const log = severity === 'warn' ? logWarn : logError;
+      log(`Timed out: ${label}`, `no response after ${ms}ms`);
       reject(new Error(`${label} timed out after ${ms}ms`));
     }, ms);
     promise.then(

@@ -4,7 +4,7 @@
 // storage/store.ts orchestrates cache + fallback on top of these.
 
 import { supabase } from '@/services/supabase';
-import { logError } from '@/services/logger';
+import { logError, withTimeout } from '@/services/logger';
 import { Role, Session, StudentProfile } from '@/types';
 
 export interface ProfileSeed {
@@ -20,10 +20,23 @@ export function remoteEnabled(): boolean {
 }
 
 // Local (no network) read of the signed-in user's id from the persisted session.
+// Bounded on purpose. getSession() first awaits supabase-js's startup refresh of
+// an expired stored token, and that refresh retries with exponential backoff
+// for up to 30s when the backend is unreachable (paused project, no signal).
+// Unbounded, every caller stalled for that whole window: Home sat on its
+// skeleton because getSessions() is gated on this. Treating "no answer yet" as
+// "not signed in" sends callers down the offline-first cache path instead.
+const AUTH_SESSION_TIMEOUT_MS = 2500;
+
 export async function currentUserId(): Promise<string | null> {
   if (!supabase) return null;
   try {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await withTimeout(
+      'auth session',
+      supabase.auth.getSession(),
+      AUTH_SESSION_TIMEOUT_MS,
+      'warn' // expected when offline; callers fall back to cache
+    );
     return data.session?.user?.id ?? null;
   } catch {
     return null;
