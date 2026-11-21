@@ -28,6 +28,10 @@ export interface PillarScore {
 // Deterministic metrics computed in code (reproducible, cheap)
 export interface DeterministicMetrics {
   durationSec: number;
+  // Optional: sessions saved before these existed still load.
+  speakingSec?: number; // first word to last word
+  longPausesPerMin?: number; // pauses of 0.6s or more, per minute of speaking
+  unclearWordCount?: number; // words the recogniser could barely make out
   wordCount: number;
   wpm: number; // words per minute
   fillerCount: number;

@@ -1,4 +1,4 @@
-// POST /transcribe  — server-side STT proxy. Keys live in function secrets.
+// POST /transcribe: server-side STT proxy. Keys live in function secrets.
 // Body (multipart/form-data): audio (file), durationSec (number)
 // Auth: required (Bearer JWT).
 
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const audio = form.get('audio');
     if (!(audio instanceof File)) return errorResponse('Missing audio file', 400, origin);
     if (audio.size === 0 || audio.size > 25 * 1024 * 1024)
-      return errorResponse('Audio must be 1 byte–25 MB', 400, origin);
+      return errorResponse('Audio must be between 1 byte and 25 MB', 400, origin);
 
     const transcript =
       PROVIDER === 'assemblyai' ? await assemblyai(audio) : await deepgram(audio);
@@ -45,7 +45,7 @@ async function deepgram(audio: File) {
   const key = Deno.env.get('DEEPGRAM_API_KEY');
   if (!key) throw new Error('DEEPGRAM_API_KEY not set');
   const res = await fetch(
-    'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&diarize=true',
+    'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&diarize=true&filler_words=true',
     {
       method: 'POST',
       headers: { Authorization: `Token ${key}`, 'Content-Type': audio.type || 'audio/m4a' },
@@ -79,7 +79,8 @@ async function assemblyai(audio: File) {
   const tr = await fetch('https://api.assemblyai.com/v2/transcript', {
     method: 'POST',
     headers: { authorization: key, 'content-type': 'application/json' },
-    body: JSON.stringify({ audio_url: upload_url, speaker_labels: true }),
+    // disfluencies: keep um/uh, which AssemblyAI removes by default.
+    body: JSON.stringify({ audio_url: upload_url, speaker_labels: true, disfluencies: true }),
   });
   const { id } = await tr.json();
   for (let i = 0; i < 60; i++) {

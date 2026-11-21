@@ -1,6 +1,6 @@
 // Age/level normalisation (Section 3, 10). A strong 8th-grader is not held to
 // the same bar as a final-year college student. Map raw metrics to 0-100
-// against level bands. These are reasonable starting bands — refine with real
+// against level bands. These are reasonable starting bands; refine with real
 // data as you collect it (and store framework_version so scores stay comparable).
 
 import { Level } from '@/types';
@@ -17,7 +17,10 @@ interface Band {
 interface LevelNorms {
   wpm: Band;
   fillerRate: Band; // lower is better -> ideal near 0
-  avgPauseSec: Band;
+  // Pauses of 0.6s or more, per minute of speaking. Lower is better, and none
+  // is ideal. The old metric (average length of those pauses) was 0 for a
+  // speaker with no long pauses, and 0 scored at the floor.
+  longPausesPerMin: Band;
   lexicalDiversity: Band; // higher is better
   sentenceLengthVariety: Band;
 }
@@ -28,21 +31,21 @@ const NORMS: Record<Level, LevelNorms> = {
   middle: {
     wpm: { idealLow: 100, idealHigh: 150, hardLow: 50, hardHigh: 210 },
     fillerRate: { idealLow: 0, idealHigh: 0.05, hardLow: -1, hardHigh: 0.18 },
-    avgPauseSec: { idealLow: 0.3, idealHigh: 1.2, hardLow: 0, hardHigh: 3 },
+    longPausesPerMin: { idealLow: 0, idealHigh: 6, hardLow: -1, hardHigh: 18 },
     lexicalDiversity: { idealLow: 0.55, idealHigh: 0.8, hardLow: 0.3, hardHigh: 1 },
     sentenceLengthVariety: { idealLow: 2, idealHigh: 6, hardLow: 0, hardHigh: 12 },
   },
   high: {
     wpm: { idealLow: 110, idealHigh: 160, hardLow: 60, hardHigh: 220 },
     fillerRate: { idealLow: 0, idealHigh: 0.04, hardLow: -1, hardHigh: 0.15 },
-    avgPauseSec: { idealLow: 0.3, idealHigh: 1.0, hardLow: 0, hardHigh: 2.5 },
+    longPausesPerMin: { idealLow: 0, idealHigh: 5, hardLow: -1, hardHigh: 15 },
     lexicalDiversity: { idealLow: 0.6, idealHigh: 0.82, hardLow: 0.35, hardHigh: 1 },
     sentenceLengthVariety: { idealLow: 3, idealHigh: 8, hardLow: 0, hardHigh: 14 },
   },
   college: {
     wpm: { idealLow: 120, idealHigh: 170, hardLow: 70, hardHigh: 230 },
     fillerRate: { idealLow: 0, idealHigh: 0.03, hardLow: -1, hardHigh: 0.12 },
-    avgPauseSec: { idealLow: 0.2, idealHigh: 0.9, hardLow: 0, hardHigh: 2.2 },
+    longPausesPerMin: { idealLow: 0, idealHigh: 4, hardLow: -1, hardHigh: 12 },
     lexicalDiversity: { idealLow: 0.62, idealHigh: 0.85, hardLow: 0.4, hardHigh: 1 },
     sentenceLengthVariety: { idealLow: 4, idealHigh: 10, hardLow: 0, hardHigh: 16 },
   },

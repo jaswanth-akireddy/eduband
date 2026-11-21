@@ -1,52 +1,32 @@
-// Deterministic metrics (Section 10) — computed in code, reproducible, cheap.
+// Deterministic metrics (Section 10): computed in code, reproducible, cheap.
 // WPM, filler rate, pause stats, lexical diversity, sentence-length variety.
 
 import { DeterministicMetrics, Transcript, WordTiming } from '@/types';
 
-// Common English fillers. Extend per language as STT languages expand.
-const FILLERS = new Set([
-  'um',
-  'uh',
-  'uhh',
-  'umm',
-  'er',
-  'erm',
-  'ah',
-  'like',
-  'you know',
-  'i mean',
-  'sort of',
-  'kind of',
-  'basically',
-  'actually',
-  'literally',
-  'so',
-]);
+// Fillers are HESITATIONS, not words. Only sounds that carry no meaning count
+// every time. "like", "so", "actually", "kind of" used to count on every
+// appearance, so "I like it", "poets like Tagore" and "the kind of books" were
+// all penalised as fillers. Those words count only in filler position below.
+const DISFLUENCIES = new Set(['um', 'umm', 'uh', 'uhh', 'er', 'erm', 'ah', 'hmm', 'mm']);
 
-// Multi-word fillers handled separately against the raw text.
-const PHRASE_FILLERS = ['you know', 'i mean', 'sort of', 'kind of'];
+// Discourse fillers, counted only where the recogniser's punctuation marks
+// them as set apart: "Like, I..." or "you know," or "I mean,". The same words
+// inside a sentence ("I like reading", "you know the answer") do not count.
+const POSITIONAL_FILLERS = [/\byou know[,.?!]/gi, /\bi mean,/gi];
 
 function normalizeWord(w: string): string {
   return w.toLowerCase().replace(/[^a-z']/g, '');
 }
 
 export function countFillers(transcript: Transcript): number {
-  const text = transcript.text.toLowerCase();
   let count = 0;
-
-  // single-word fillers from tokenised words
   for (const w of transcript.words) {
     const n = normalizeWord(w.word);
-    if (n && FILLERS.has(n)) count++;
+    if (DISFLUENCIES.has(n)) count++;
+    // "like" only when punctuated as an aside: "Like, I..." / "...and, like, we"
+    else if (n === 'like' && /,$/.test(w.word.trim())) count++;
   }
-
-  // phrase fillers from raw text
-  for (const phrase of PHRASE_FILLERS) {
-    const re = new RegExp(`\\b${phrase}\\b`, 'g');
-    const matches = text.match(re);
-    if (matches) count += matches.length;
-  }
-
+  for (const re of POSITIONAL_FILLERS) count += transcript.text.match(re)?.length ?? 0;
   return count;
 }
 
@@ -106,26 +86,45 @@ export function avgSttConfidence(words: WordTiming[]): number {
   return words.reduce((a, w) => a + w.confidence, 0) / words.length;
 }
 
+// Time from the first word to the last: the speech itself. Using recording
+// length counted thinking time before the first word as slow speaking.
+export function speakingSpan(words: WordTiming[]): number {
+  if (words.length === 0) return 0;
+  return Math.max(0, words[words.length - 1].endSec - words[0].startSec);
+}
+
+// Words the recogniser could barely make out. A low AVERAGE confidence is what
+// an unfamiliar accent produces even when every word is understood, so the
+// average is not used. Only individual words below this are counted.
+export const UNCLEAR_WORD_CONFIDENCE = 0.5;
+
 export function computeMetrics(
   transcript: Transcript,
   durationSec: number
 ): DeterministicMetrics {
   const wordCount = transcript.words.length;
-  const minutes = durationSec / 60;
-  const wpm = minutes > 0 ? Math.round(wordCount / minutes) : 0;
+  const speakingSec = speakingSpan(transcript.words);
+  const speakingMin = speakingSec / 60;
+  const wpm = speakingMin > 0 ? Math.round(wordCount / speakingMin) : 0;
   const fillerCount = countFillers(transcript);
   const { pauseCount, avgPauseSec } = pauseStats(transcript.words);
+  const unclearWordCount = transcript.words.filter(
+    (w) => w.confidence < UNCLEAR_WORD_CONFIDENCE
+  ).length;
 
   return {
     durationSec,
+    speakingSec,
     wordCount,
     wpm,
     fillerCount,
     fillerRate: wordCount > 0 ? fillerCount / wordCount : 0,
     pauseCount,
     avgPauseSec,
+    longPausesPerMin: speakingMin > 0 ? pauseCount / speakingMin : 0,
     lexicalDiversity: lexicalDiversity(transcript.words),
     sentenceLengthVariety: sentenceLengthVariety(transcript.text),
     sttConfidence: avgSttConfidence(transcript.words),
+    unclearWordCount,
   };
 }

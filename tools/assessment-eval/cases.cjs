@@ -26,6 +26,7 @@ module.exports = [
   ['STRONG_LIKE', 'STRONG + correct uses of like/so/actually/kind of', STRONG_LIKE, { wpm: 145, sentencePause: 0.45 }, 'Should match STRONG'],
   ['ACCENT', 'STRONG, same words, ASR less sure (non-native accent)', STRONG, { wpm: 145, sentencePause: 0.45, conf: 0.78 }, 'Should match STRONG'],
   ['THINK_FIRST', 'STRONG, 4s silence before speaking', STRONG, { wpm: 145, sentencePause: 0.45, lead: 4.0, tail: 3.0 }, 'Should match STRONG'],
+  ['MUMBLED', 'STRONG, but 1 word in 8 barely recognisable', STRONG, { wpm: 145, sentencePause: 0.45, unclearEvery: 8 }, 'Clarity clearly below STRONG'],
   ['GRAMMAR', 'STRONG content, frequent grammar errors', GRAMMAR, { wpm: 140, sentencePause: 0.45, conf: 0.93 }, 'Language clearly below STRONG'],
   ['AVERAGE', 'Simple answer, some um/uh, some pauses', AVERAGE, { wpm: 120, sentencePause: 0.7, fillerPause: 0.8, conf: 0.92 }, 'Clearly below STRONG'],
   ['WEAK', 'Repetitive, many fillers, long pauses', WEAK, { wpm: 85, sentencePause: 1.8, fillerPause: 1.5, conf: 0.85 }, 'Lowest score'],

@@ -80,7 +80,7 @@ function fileMeta(uri: string): { name: string; type: string } {
 async function deepgramTranscribe(uri: string): Promise<Transcript> {
   const audio = await uriToBlob(uri);
   const res = await fetch(
-    'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&diarize=true&utterances=true',
+    'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&diarize=true&utterances=true&filler_words=true',
     {
       method: 'POST',
       headers: {
@@ -119,7 +119,8 @@ async function assemblyTranscribe(uri: string): Promise<Transcript> {
   const tr = await fetch('https://api.assemblyai.com/v2/transcript', {
     method: 'POST',
     headers: { authorization: config.deepgramKey, 'content-type': 'application/json' },
-    body: JSON.stringify({ audio_url: upload_url, speaker_labels: true }),
+    // disfluencies: keep um/uh, which AssemblyAI removes by default.
+    body: JSON.stringify({ audio_url: upload_url, speaker_labels: true, disfluencies: true }),
   });
   const { id } = await tr.json();
   // 3) poll

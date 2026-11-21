@@ -17,7 +17,7 @@ import {
   communicationIndex,
   pillarDef,
 } from './framework';
-import { computeMetrics } from './metrics';
+import { computeMetrics, speakingSpan } from './metrics';
 import { bandScore, getNorms } from './norms';
 import { scoreJudgmentPillars } from './llmScoring';
 import { suggestTask } from '@/data/tasks';
@@ -27,18 +27,27 @@ function fluencyScore(m: DeterministicMetrics, level: Level): number {
   const n = getNorms(level);
   const pace = bandScore(m.wpm, n.wpm);
   const fillers = bandScore(m.fillerRate, n.fillerRate);
-  const pauses = bandScore(m.avgPauseSec, n.avgPauseSec);
+  const pauses = bandScore(m.longPausesPerMin ?? 0, n.longPausesPerMin);
   return Math.round(pace * 0.4 + fillers * 0.35 + pauses * 0.25);
 }
 
+// Share of words the recogniser could barely make out. Average confidence is
+// not used: it drops for unfamiliar accents even when every word is
+// understood, so it scored identical answers differently by accent.
+function unclearRate(m: DeterministicMetrics): number {
+  return m.wordCount > 0 ? (m.unclearWordCount ?? 0) / m.wordCount : 0;
+}
+
 function clarityScore(m: DeterministicMetrics): number {
-  // Intelligibility proxy from STT confidence (Section 3).
-  // Never penalise accent; only flag genuine intelligibility issues.
-  return Math.round(Math.min(100, Math.max(30, m.sttConfidence * 100)));
+  // Up to 2% unclear words is normal speech: full marks. Tapers to the floor
+  // at 15%, where a listener would be missing roughly one word in seven.
+  return bandScore(unclearRate(m), { idealLow: 0, idealHigh: 0.02, hardLow: -1, hardHigh: 0.15 });
 }
 
 function fluencyEvidence(m: DeterministicMetrics): string {
-  return `${m.wpm} words/min, ${m.fillerCount} fillers, ${m.pauseCount} notable pauses.`;
+  const f = m.fillerCount === 1 ? 'filler' : 'fillers';
+  const p = m.pauseCount === 1 ? 'long pause' : 'long pauses';
+  return `${m.wpm} words/min, ${m.fillerCount} ${f}, ${m.pauseCount} ${p}.`;
 }
 
 function fluencyTip(m: DeterministicMetrics, level: Level): string {
@@ -58,10 +67,10 @@ function fluencyTip(m: DeterministicMetrics, level: Level): string {
 }
 
 function clarityTip(m: DeterministicMetrics): string {
-  if (m.sttConfidence < 0.7) {
-    return 'Open your mouth a touch more and finish word endings so each word lands clearly.';
+  if (unclearRate(m) > 0.05) {
+    return 'A few words were hard to make out. Slow down on key words and finish your word endings.';
   }
-  return 'Clear and easy to follow. Keep finishing your word endings crisply.';
+  return 'Your words came through clearly. Keep finishing your word endings crisply.';
 }
 
 function formatDuration(sec: number): string {
@@ -87,12 +96,6 @@ export class InsufficientSpeechError extends Error {
   }
 }
 
-// Time from the first word to the last: the speech itself, not the silence
-// around it.
-export function speakingSeconds(t: Transcript): number {
-  if (t.words.length === 0) return 0;
-  return Math.max(0, t.words[t.words.length - 1].endSec - t.words[0].startSec);
-}
 
 export async function analyze(
   transcript: Transcript,
@@ -100,7 +103,7 @@ export async function analyze(
   level: Level
 ): Promise<{ metrics: DeterministicMetrics; analysis: Analysis }> {
   // 0. Refuse to score too little speech.
-  const speakingSec = speakingSeconds(transcript);
+  const speakingSec = speakingSpan(transcript.words);
   if (transcript.words.length < MIN_WORDS || speakingSec < MIN_SPEAKING_SEC) {
     throw new InsufficientSpeechError(transcript.words.length, speakingSec);
   }
@@ -133,11 +136,14 @@ export async function analyze(
         id: 'clarity',
         label: def.label,
         score: clarity,
-        evidence: `Speech recognised with ${(metrics.sttConfidence * 100).toFixed(
-          0
-        )}% confidence.`,
+        evidence:
+          (metrics.unclearWordCount ?? 0) === 0
+            ? 'Every word was clear enough to transcribe.'
+            : `${metrics.unclearWordCount} of ${metrics.wordCount} words were hard to make out.`,
         tip: clarityTip(metrics),
-        why: 'Intelligibility proxy from recognition confidence (accent-fair).',
+        // Not labelled accent-fair: the threshold still needs checking against
+        // real recordings across accents (docs/ASSESSMENT_REVIEW.md, iteration D).
+        why: 'Based on how many words were hard to make out, not on accent.',
       };
     }
     const r = llmById.get(def.id);
