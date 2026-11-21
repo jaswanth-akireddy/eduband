@@ -3,15 +3,17 @@
 //   npm run eval:assessment
 //
 // Runs the real analysis pipeline (src/analysis) on designed recordings in
-// cases.cjs and checks twelve properties a fair English assessment must have.
+// cases.cjs and checks fourteen properties a fair English assessment must have.
 // Each check prints the measured values behind its verdict. Re-run after every
 // change to the scoring code: a fix should flip checks to PASS without
 // flipping any other check to FAIL.
 //
 // Scope: this exercises the code path the app takes when no LLM is reachable
-// (mock judgment pillars), which is what students get while the backend is
-// down. Checks 9 and 12 read the server and client source directly, because
-// they are about what is sent to Deepgram and the LLM.
+// (rules for the judgement pillars), which is what students get while the
+// backend is down. Checks 7 and 8 need the AI scorer and fail on this path by
+// design: rules cannot see grammar or relevance. Check 10 reads the server
+// source; checks 13 and 14 exercise the shared prompt and validator that the
+// AI path uses (backend/supabase/functions/_shared/scoring.ts).
 
 const fs = require('fs');
 const path = require('path');
@@ -19,6 +21,7 @@ const { ROOT } = require('./register.cjs');
 const { analyze, InsufficientSpeechError } = require(path.join(ROOT, 'src/analysis/pipeline.ts'));
 const { transcribe, TranscriptionError } = require(path.join(ROOT, 'src/analysis/stt.ts'));
 const { config } = require('./stubs/config.cjs');
+const scoring = require(path.join(ROOT, 'backend/supabase/functions/_shared/scoring.ts'));
 const speak = require('./speak.cjs');
 const cases = require('./cases.cjs');
 
@@ -61,6 +64,25 @@ async function run(id) {
   const demo = await transcribe('file:///student-recording.m4a', 45);
   console.log = quiet;
 
+  // Scoring request and validator, from the shared module app and server use.
+  const msg = scoring.buildScoringMessage({ transcript: 'x', taskPrompt: cases.PROMPT, level: 'high', metrics: {} });
+  const taskInMessage = msg.includes(cases.PROMPT);
+  const backendBody = (src('src/analysis/llmScoring.ts').match(/body: JSON\.stringify\(\{ transcript[^)]*\}\)/) || [''])[0];
+  const T = cases.TEXT.GRAMMAR;
+  const ok = (id, evidence) => ({ id, score: 50, evidence, tip: 't', why: 'w' });
+  const v = scoring.validateScoring({
+    onTopic: true,
+    pillars: [ok('language', 'she gived me one novel'), ok('structure', 'I visited the museum every weekend'), ok('confidence', 'It have tall windows')],
+    mistakes: [
+      { quote: 'It have tall windows', type: 'grammar', correction: 'It has tall windows', explanation: 'it takes has' },
+      { quote: 'we was going there daily', type: 'grammar', correction: 'we were going', explanation: 'invented' },
+    ],
+  }, T);
+  let missingThrows = false;
+  try { scoring.validateScoring({ onTopic: true, pillars: [ok('language', '')], mistakes: [] }, T); }
+  catch (e) { missingThrows = e.name === 'ScoringError'; }
+  const guard = { fakeEvidence: v.pillars[1].evidence, realEvidence: v.pillars[0].evidence, mistakes: v.mistakes.length, missingThrows };
+
   const checks = [
     ['Separates levels', 'STRONG beats AVERAGE by 10+, AVERAGE beats WEAK',
       R.STRONG.a.ci - R.AVERAGE.a.ci >= 10 && R.AVERAGE.a.ci > R.WEAK.a.ci,
@@ -80,10 +102,10 @@ async function run(id) {
     ['Unclear speech still costs Clarity', 'MUMBLED (1 word in 8 unrecognisable) scores Clarity 70 or below',
       R.MUMBLED.s.clarity <= 70,
       `clarity ${R.MUMBLED.s.clarity} vs STRONG ${R.STRONG.s.clarity}; ${R.MUMBLED.m.unclearWordCount} unclear words`],
-    ['Grammar errors are visible', 'GRAMMAR language at least 15 below STRONG',
+    ['Grammar errors are visible', 'GRAMMAR language at least 15 below STRONG (needs the AI scorer)',
       R.STRONG.s.language - R.GRAMMAR.s.language >= 15,
       `language ${R.GRAMMAR.s.language} vs ${R.STRONG.s.language}; focus areas: ${R.GRAMMAR.a.focusAreas.join(', ')}`],
-    ['Off-topic is penalised', 'OFF_TOPIC CI at least 15 below STRONG',
+    ['Off-topic is penalised', 'OFF_TOPIC CI at least 15 below STRONG (needs the AI scorer)',
       R.STRONG.a.ci - R.OFF_TOPIC.a.ci >= 15,
       `CI ${R.OFF_TOPIC.a.ci} vs ${R.STRONG.a.ci}`],
     ['Too-short answers are flagged', 'A 7-second answer is not scored, but a weak full answer still is',
@@ -94,13 +116,16 @@ async function run(id) {
       'checked the server Deepgram request'],
     ['Evidence is pillar-specific', 'Language, Structure, Confidence do not all quote the same line',
       new Set([R.GRAMMAR.ev.language, R.GRAMMAR.ev.structure, R.GRAMMAR.ev.confidence]).size > 1,
-      `GRAMMAR quotes "${String(R.GRAMMAR.ev.language).slice(0, 40)}..." for all three`],
+      ['language', 'structure', 'confidence'].map((k) => `${k}: "${String(R.GRAMMAR.ev[k]).slice(0, 28)}..."`).join('; ')],
     ['No report from a fake transcript', 'Configured STT failing refuses; demo-mode sample text is labelled demo',
       failed.threw === 'TranscriptionError' && demo.source === 'demo',
       `failing STT -> ${failed.threw ? 'refused (' + failed.threw + ')' : 'scored canned text "' + failed.scoredText.slice(0, 30) + '..."'}; demo transcript source: ${demo.source ?? 'unlabelled'}`],
-    ['Scoring knows the question', 'The task prompt is sent to the LLM scorer',
-      /taskPrompt|task_prompt|prompt:/.test(src('src/analysis/llmScoring.ts').split('PUBLIC')[0].match(/JSON\.stringify\(\{[^)]*\}\)/g)?.join(' ') ?? ''),
-      'checked the scoring request bodies'],
+    ['Scoring knows the question', 'The task prompt reaches the scorer, in the app and on the server',
+      taskInMessage && /taskPrompt/.test(backendBody) && /body\.taskPrompt/.test(src('backend/supabase/functions/score/index.ts')),
+      `prompt in scorer message: ${taskInMessage ? 'yes' : 'no'}; backend request body: ${backendBody || 'not found'}`],
+    ['Only real quotes are shown', 'An invented quote or mistake is removed, and a missing pillar is an error, not a silent 60',
+      guard.fakeEvidence === '' && guard.realEvidence !== '' && guard.mistakes === 1 && guard.missingThrows,
+      `invented evidence -> "${guard.fakeEvidence}"; real evidence kept: ${guard.realEvidence !== ''}; mistakes kept ${guard.mistakes} of 2; missing pillar ${guard.missingThrows ? 'rejected' : 'accepted'}`],
   ];
 
   let pass = 0;

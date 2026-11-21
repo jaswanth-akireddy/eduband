@@ -3,13 +3,44 @@
 How well does EduBand score a student's spoken English, and how do we make it
 better? This review read the whole scoring pipeline, then measured it.
 
-Measured on commit `de35dd2`. Re-run any time with:
+First measured on commit `de35dd2`. Re-run any time with:
 
 ```
 npm run eval:assessment
 ```
 
-**Result today: 0 of 12 checks pass.**
+**Result at review: 0 of 12 checks pass. After iterations A to C: 12 of 14.**
+
+| Stage | Checks passing |
+|---|---|
+| Review (`de35dd2`) | 0 of 12 |
+| Iteration A, integrity (`f75f1ce`) | 2 of 12 |
+| Iteration B, measurement (`3fc6040`) | 9 of 13 (added: unclear speech still costs Clarity) |
+| Iteration C, AI scorer | 12 of 14 (added: only real quotes are shown) |
+
+The two still failing, 7 (grammar errors are visible) and 8 (off-topic is
+penalised), fail on the no-AI path by design: simple rules cannot see grammar
+or relevance. The report now says so ("Quick estimate"). They need the AI
+scorer, which needs either the Supabase project restored or an Anthropic key
+for a live run, and then real recordings (iteration D) to confirm.
+
+### What iteration C changed
+
+- One prompt, rubric, JSON schema and validator, shared by the app and the
+  server: `backend/supabase/functions/_shared/scoring.ts`.
+- The task prompt is sent, and the rubric scores whether the answer addresses
+  it (inside Structure, with `onTopic` returned and shown on the report).
+- Anchored bands per pillar, against the CEFR range expected for the student's
+  level (middle A2 to B1, high B1 to B2, college B2 to C1).
+- Claude Opus 5.5 with structured JSON output (`output_config.format`), API
+  version `2026-10-21`, server-side refusal fallback on. Gemini at
+  temperature 0 with a JSON response schema.
+- Up to five specific mistakes (quote, type, correction, reason), shown as
+  "Fix these" on the report.
+- Every evidence and mistake quote is checked against the transcript; an
+  invented one is removed. A missing pillar is retried once, then the report
+  falls back to labelled rules instead of a silent 60.
+- Rules path: each pillar quotes a different sentence chosen for that pillar.
 
 ---
 

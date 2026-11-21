@@ -1,8 +1,8 @@
 // Central config for external services.
 //
 // Credentials can come from (in priority order):
-//   1) In-app API Keys screen (stored on-device) — for TESTING.
-//   2) Env vars (.env) — EXPO_PUBLIC_* — for local dev.
+//   1) In-app API Keys screen (stored on-device): for TESTING.
+//   2) Env vars (.env), EXPO_PUBLIC_*: for local dev.
 //   3) Nothing -> the app uses the built-in mock pipeline.
 //
 // SECURITY NOTE: keys entered in-app or via env live ON THE DEVICE and can be
@@ -34,7 +34,7 @@ const ENV: Credentials = {
     | 'gemini',
   anthropicKey: process.env.EXPO_PUBLIC_ANTHROPIC_KEY ?? '',
   anthropicModel:
-    process.env.EXPO_PUBLIC_ANTHROPIC_MODEL ?? 'claude-3-5-sonnet-latest',
+    process.env.EXPO_PUBLIC_ANTHROPIC_MODEL ?? 'claude-opus-5-5',
   geminiKey: process.env.EXPO_PUBLIC_GEMINI_KEY ?? '',
   geminiModel:
     process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-1.5-flash',
@@ -88,7 +88,7 @@ function mergeNonEmpty(base: Credentials, over: Partial<Credentials>): Credentia
   };
 }
 
-// Derived flags — read live (config mutates after load/save).
+// Derived flags, read live (config mutates after load/save).
 export const modeFlags = {
   get useBackend() {
     return !!config.apiBase;

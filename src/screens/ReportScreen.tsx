@@ -152,6 +152,16 @@ export default function ReportScreen({ route, navigation }: Props) {
         </View>
       )}
 
+      {analysis.onTopic === false && (
+        <View style={styles.notice} accessibilityRole="text">
+          <Icon name="info" size={18} color={colors.textMuted} />
+          <Text style={styles.noticeText}>
+            <Text style={styles.noticeLead}>Off topic. </Text>
+            Your answer didn't address the task, so Structure is scored low. Try again and answer the question asked.
+          </Text>
+        </View>
+      )}
+
       {/* Communication Index */}
       <FadeIn>
       <Card style={{ alignItems: 'center', paddingVertical: spacing.lg }}>
@@ -205,6 +215,30 @@ export default function ReportScreen({ route, navigation }: Props) {
           </View>
         </Card>
       ))}
+
+      {/* Specific mistakes, each with the exact words, the fix and why. Only
+          the AI scorer produces these, and every quote has been checked
+          against the transcript before it gets here. */}
+      {!!analysis.mistakes?.length && (
+        <Card>
+          <Text style={styles.sectionTitle}>Fix these</Text>
+          {analysis.mistakes.map((m, i) => (
+            <View
+              key={i}
+              style={[styles.mistake, i > 0 && styles.mistakeDivider]}
+              accessible
+              accessibilityLabel={`${m.type} mistake. You said: ${m.quote}. Better: ${m.correction}. ${m.explanation}`}
+            >
+              <Text style={styles.mistakeType}>{m.type}</Text>
+              <Text style={styles.mistakeLabel}>You said</Text>
+              <Text style={styles.mistakeQuote}>"{m.quote}"</Text>
+              <Text style={[styles.mistakeLabel, { marginTop: spacing.sm }]}>Better</Text>
+              <Text style={styles.mistakeFix}>{m.correction}</Text>
+              {!!m.explanation && <Text style={styles.mistakeWhy}>{m.explanation}</Text>}
+            </View>
+          ))}
+        </Card>
+      )}
 
       {/* Five pillars as labelled bars. This replaces a radar that repeated
           these same five numbers and clipped its side labels; bars are the
@@ -380,7 +414,8 @@ const useStyles = makeStyles((colors) => ({
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
-  focusTagText: { fontSize: 9, fontWeight: '700', color: colors.midText, letterSpacing: 0.3 },
+  // Ink on the amber tint: midText on it was 4.30:1, below AA.
+  focusTagText: { fontSize: 9, fontWeight: '700', color: colors.text, letterSpacing: 0.3 },
   barTrack: {
     flex: 1,
     height: 8,
@@ -448,6 +483,37 @@ const useStyles = makeStyles((colors) => ({
   },
   evidenceText: { color: colors.text, fontSize: font.small, fontStyle: 'italic', lineHeight: 20 },
   tipBox: { marginTop: spacing.md },
+  mistake: { paddingVertical: spacing.sm },
+  // Full-width hairline between items, not a coloured edge on one side.
+  mistakeDivider: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
+  },
+  mistakeType: {
+    alignSelf: 'flex-start',
+    fontSize: font.tiny,
+    fontWeight: '700',
+    color: colors.text, // ink on the amber tint: 15.06:1 light, 12.60:1 dark
+    backgroundColor: colors.mid + '1F',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    overflow: 'hidden',
+  },
+  mistakeLabel: {
+    fontSize: font.tiny,
+    fontWeight: '700',
+    color: colors.textMuted,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  mistakeQuote: { color: colors.text, fontSize: font.body, fontStyle: 'italic', lineHeight: 22 },
+  mistakeFix: { color: colors.goodText, fontSize: font.body, fontWeight: '600', lineHeight: 22 },
+  mistakeWhy: { color: colors.textMuted, fontSize: font.small, lineHeight: 20, marginTop: 6 },
   tipLabel: {
     fontSize: font.tiny,
     fontWeight: '700',

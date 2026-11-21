@@ -3,12 +3,26 @@
 //
 // Resolution order (see src/config.ts):
 //   1. Backend proxy -> POST to your Edge Function (Anthropic key server-side)
-//   2. Direct Claude -> call Anthropic from the client (test only)
-//   3. Mock          -> rules-based scores so the app always runs
+//   2. Direct Claude or Gemini -> call the provider from the client (test only)
+//   3. Rules -> built-in estimates so the app always runs, labelled as such
+//
+// The prompt, rubric, JSON schema and validator are shared with the server:
+// backend/supabase/functions/_shared/scoring.ts.
 
-import { DeterministicMetrics, Level, PillarId, Transcript } from '@/types';
+import { DeterministicMetrics, Level, Mistake, PillarId, Transcript } from '@/types';
 import { config, modeFlags } from '@/config';
 import { getAccessToken } from '@/services/supabase';
+import {
+  anthropicHeaders,
+  anthropicResponseText,
+  anthropicScoringBody,
+  buildScoringMessage,
+  SCORING_PROMPT_VERSION,
+  SCORING_SYSTEM_PROMPT,
+  ScoringError,
+  type ScoringInput,
+  validateScoring,
+} from '../../backend/supabase/functions/_shared/scoring';
 
 export interface LlmPillarResult {
   id: PillarId;
@@ -22,31 +36,58 @@ export interface LlmScoringResult {
   modelVersion: string;
   // 'rules' when the AI was unreachable and built-in rules scored instead.
   source: 'ai' | 'rules';
+  // Only the AI can find mistakes or judge relevance; rules leave these unset.
+  mistakes?: Mistake[];
+  onTopic?: boolean;
 }
 
-export const CLAUDE_SYSTEM_PROMPT = `You are an expert, kind speech communication coach for students.
-You receive a transcript of a student's spoken task and pre-computed deterministic metrics.
-Score these pillars 0-100, age/level normed: language (vocabulary richness & grammatical
-correctness), structure (organisation, logical flow, connectives, conciseness), confidence
-(assertiveness/tone cues inferable from word choice and phrasing).
-CRITICAL FAIRNESS RULE: never penalise regional or non-native accents or dialects. Judge
-intelligibility and growth, not accent conformity.
-For EACH pillar return: score (0-100), a short verbatim evidence snippet quoted from the
-transcript, one concrete doable next step (tip), and a one-line why.
-Return ONLY valid JSON, no prose, matching exactly:
-{"pillars":[{"id":"language|structure|confidence","score":0,"evidence":"","tip":"","why":""}]}`;
+// ---------------------------------------------------------------------------
+// Evidence: a real sentence from the transcript, chosen per pillar
+// ---------------------------------------------------------------------------
+const HEDGES = /\b(um+|uh+|er+m?|hmm+|you know|i mean|i think|maybe|kind of|sort of|i guess)\b/gi;
 
-// ---------------------------------------------------------------------------
-// MOCK
-// ---------------------------------------------------------------------------
-function pickSnippet(transcript: Transcript, fallback: string): string {
-  const sentences = transcript.text
-    .split(/[.!?]+/)
+function sentencesOf(text: string): string[] {
+  return (text.match(/[^.!?]+[.!?]*/g) ?? [])
     .map((s) => s.trim())
     .filter((s) => s.split(/\s+/).length >= 4);
-  if (sentences.length === 0) return fallback;
-  return sentences[Math.floor(sentences.length / 2)];
 }
+
+function repetitiveness(sentence: string, all: string): number {
+  // How much of this sentence reuses words the speaker leans on elsewhere.
+  const words = sentence.toLowerCase().match(/[a-z']+/g) ?? [];
+  const counts = new Map<string, number>();
+  for (const w of all.toLowerCase().match(/[a-z']+/g) ?? []) counts.set(w, (counts.get(w) ?? 0) + 1);
+  const repeated = words.filter((w) => w.length > 3 && (counts.get(w) ?? 0) > 2).length;
+  return words.length ? repeated / words.length : 0;
+}
+
+// Language: the most repetitive sentence. Structure: the opening, which shows
+// whether the main point comes first. Confidence: the sentence with the most
+// hedges or fillers, else the closing line. Never the same sentence twice.
+export function pillarEvidence(transcript: Transcript): Record<'language' | 'structure' | 'confidence', string> {
+  const s = sentencesOf(transcript.text);
+  const fallback = 'your recorded answer';
+  if (s.length === 0) return { language: fallback, structure: fallback, confidence: fallback };
+  const used = new Set<string>();
+  const take = (ranked: string[]) => {
+    const pick = ranked.find((x) => !used.has(x)) ?? ranked[0];
+    used.add(pick);
+    return pick;
+  };
+  const structure = take([s[0], ...s.slice(1)]);
+  const byHedges = [...s].sort(
+    (a, b) => (b.match(HEDGES)?.length ?? 0) - (a.match(HEDGES)?.length ?? 0)
+  );
+  const confidence = take(
+    (byHedges[0].match(HEDGES)?.length ?? 0) > 0 ? byHedges : [s[s.length - 1], ...[...s].reverse()]
+  );
+  const language = take([...s].sort((a, b) => repetitiveness(b, transcript.text) - repetitiveness(a, transcript.text)));
+  return { language, structure, confidence };
+}
+
+// ---------------------------------------------------------------------------
+// RULES (no AI reachable)
+// ---------------------------------------------------------------------------
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 function mockScore(transcript: Transcript, metrics: DeterministicMetrics): LlmScoringResult {
@@ -55,107 +96,90 @@ function mockScore(transcript: Transcript, metrics: DeterministicMetrics): LlmSc
   const structureBase = metrics.sentenceLengthVariety > 2 && metrics.wordCount > 40 ? 72 : 55;
   const structure = clamp(structureBase + (metrics.wordCount > 120 ? 8 : 0), 30, 96);
   const confidence = clamp(70 - metrics.fillerRate * 200 + (metrics.wpm > 110 ? 6 : -4), 30, 95);
-  const snippet = pickSnippet(transcript, 'your recorded answer');
+  const ev = pillarEvidence(transcript);
   return {
     modelVersion: 'rules-1.0.0',
     source: 'rules',
     pillars: [
-      { id: 'language', score: Math.round(language), evidence: snippet,
-        tip: language < 65 ? 'Swap one common word for a more precise one each session.' : 'Keep stretching vocabulary; one vivid word per key idea.',
-        why: `Lexical diversity ${(metrics.lexicalDiversity * 100).toFixed(0)}%.` },
-      { id: 'structure', score: Math.round(structure), evidence: snippet,
+      { id: 'language', score: Math.round(language), evidence: ev.language,
+        tip: language < 65 ? 'Swap one common word for a more precise one each session.' : 'Keep stretching vocabulary: one vivid word per key idea.',
+        why: `Range of words used: ${(metrics.lexicalDiversity * 100).toFixed(0)}% different words. Grammar was not checked.` },
+      { id: 'structure', score: Math.round(structure), evidence: ev.structure,
         tip: structure < 65 ? 'Open with your main point, then give two reasons.' : 'Add a short closing line restating your main point.',
         why: metrics.sentenceLengthVariety < 2 ? 'Sentences were similar in length.' : 'Good mix of sentence lengths.' },
-      { id: 'confidence', score: Math.round(confidence), evidence: snippet,
+      { id: 'confidence', score: Math.round(confidence), evidence: ev.confidence,
         tip: confidence < 65 ? 'Pause silently instead of using a filler.' : 'Vary emphasis on key words to stay engaging.',
         why: `Filler rate ${(metrics.fillerRate * 100).toFixed(1)}% (${metrics.fillerCount} fillers).` },
     ],
   };
 }
 
-// ---------------------------------------------------------------------------
-// Parse + validate model JSON
-// ---------------------------------------------------------------------------
-function parsePillars(raw: string): LlmPillarResult[] {
-  // Be tolerant: extract the first {...} block in case of stray prose.
-  const match = raw.match(/\{[\s\S]*\}/);
-  const json = JSON.parse(match ? match[0] : raw);
-  const allowed: PillarId[] = ['language', 'structure', 'confidence'];
-  return (json.pillars ?? [])
-    .filter((p: any) => allowed.includes(p.id))
-    .map((p: any) => ({
-      id: p.id,
-      score: clamp(Math.round(Number(p.score) || 60), 0, 100),
-      evidence: String(p.evidence ?? ''),
-      tip: String(p.tip ?? ''),
-      why: String(p.why ?? ''),
-    }));
+// The validator blanks any evidence quote that is not really in the
+// transcript; replace those with a real sentence for that pillar.
+function finish(
+  scored: ReturnType<typeof validateScoring>,
+  transcript: Transcript,
+  modelVersion: string
+): LlmScoringResult {
+  const ev = pillarEvidence(transcript);
+  return {
+    modelVersion,
+    source: 'ai',
+    onTopic: scored.onTopic,
+    mistakes: scored.mistakes,
+    pillars: scored.pillars.map((p) => ({ ...p, evidence: p.evidence || ev[p.id] })),
+  };
+}
+
+async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    // Retry once on incomplete or invalid output, not on network or auth errors.
+    if (e instanceof ScoringError) return fn();
+    throw e;
+  }
 }
 
 // ---------------------------------------------------------------------------
 // DIRECT CLAUDE (test only)
 // ---------------------------------------------------------------------------
-async function callClaude(
-  transcript: Transcript,
-  metrics: DeterministicMetrics,
-  level: Level
-): Promise<LlmScoringResult> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: config.anthropicModel,
-      max_tokens: 1024,
-      system: CLAUDE_SYSTEM_PROMPT,
-      messages: [
-        { role: 'user', content: JSON.stringify({ transcript: transcript.text, metrics, level }) },
-      ],
-    }),
+async function callClaude(input: ScoringInput, transcript: Transcript): Promise<LlmScoringResult> {
+  return withRetry(async () => {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: anthropicHeaders(config.anthropicKey),
+      body: JSON.stringify(anthropicScoringBody(config.anthropicModel, input)),
+    });
+    if (!res.ok) throw new Error(`Anthropic error ${res.status}`);
+    const data = await res.json();
+    const scored = validateScoring(anthropicResponseText(data), input.transcript);
+    return finish(scored, transcript, `${data?.model ?? config.anthropicModel} ${SCORING_PROMPT_VERSION}`);
   });
-  if (!res.ok) throw new Error(`Anthropic error ${res.status}`);
-  const data = await res.json();
-  const text = data?.content?.[0]?.text ?? '';
-  return { pillars: parsePillars(text), modelVersion: config.anthropicModel, source: 'ai' };
 }
 
 // ---------------------------------------------------------------------------
 // DIRECT GEMINI (test only)
 // ---------------------------------------------------------------------------
-async function callGemini(
-  transcript: Transcript,
-  metrics: DeterministicMetrics,
-  level: Level
-): Promise<LlmScoringResult> {
-  const prompt = `${CLAUDE_SYSTEM_PROMPT}
-
-Analyze this student's speech and return JSON:
-${JSON.stringify({ transcript: transcript.text, metrics, level })}`;
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent?key=${config.geminiKey}`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
-        },
-      }),
-    }
-  );
-  
-  if (!res.ok) throw new Error(`Gemini error ${res.status}`);
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  return { pillars: parsePillars(text), modelVersion: config.geminiModel, source: 'ai' };
+async function callGemini(input: ScoringInput, transcript: Transcript): Promise<LlmScoringResult> {
+  return withRetry(async () => {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent?key=${config.geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SCORING_SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: buildScoringMessage(input) }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 2048, responseMimeType: 'application/json' },
+        }),
+      }
+    );
+    if (!res.ok) throw new Error(`Gemini error ${res.status}`);
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    return finish(validateScoring(text, input.transcript), transcript, `${config.geminiModel} ${SCORING_PROMPT_VERSION}`);
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -164,7 +188,8 @@ ${JSON.stringify({ transcript: transcript.text, metrics, level })}`;
 async function callBackend(
   transcript: Transcript,
   metrics: DeterministicMetrics,
-  level: Level
+  level: Level,
+  taskPrompt: string | null
 ): Promise<LlmScoringResult> {
   const token = await getAccessToken();
   const res = await fetch(`${config.apiBase}/score`, {
@@ -173,14 +198,16 @@ async function callBackend(
       'content-type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ transcript, metrics, level }),
+    body: JSON.stringify({ transcript, metrics, level, taskPrompt }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`Backend scoring error ${res.status}${body ? `: ${body.slice(0, 300)}` : ''}`);
   }
-  const data = (await res.json()) as Omit<LlmScoringResult, 'source'>;
-  return { ...data, source: 'ai' };
+  const data = await res.json();
+  // The server validated already; validating again also re-checks quotes
+  // against the transcript this device holds.
+  return finish(validateScoring(data, transcript.text), transcript, String(data?.modelVersion ?? 'backend'));
 }
 
 // ---------------------------------------------------------------------------
@@ -189,21 +216,23 @@ async function callBackend(
 export async function scoreJudgmentPillars(
   transcript: Transcript,
   metrics: DeterministicMetrics,
-  level: Level
+  level: Level,
+  taskPrompt: string | null = null
 ): Promise<LlmScoringResult> {
+  const input: ScoringInput = {
+    transcript: transcript.text,
+    taskPrompt,
+    level,
+    metrics: metrics as unknown as Record<string, unknown>,
+  };
   try {
-    if (modeFlags.useBackend) return await callBackend(transcript, metrics, level);
+    if (modeFlags.useBackend) return await callBackend(transcript, metrics, level, taskPrompt);
     if (modeFlags.useDirectLlm) {
-      if (config.llmProvider === 'gemini' && config.geminiKey) {
-        const r = await callGemini(transcript, metrics, level);
-        if (r.pillars.length) return r;
-      } else if (config.llmProvider === 'claude' && config.anthropicKey) {
-        const r = await callClaude(transcript, metrics, level);
-        if (r.pillars.length) return r;
-      }
+      if (config.llmProvider === 'gemini' && config.geminiKey) return await callGemini(input, transcript);
+      if (config.llmProvider === 'claude' && config.anthropicKey) return await callClaude(input, transcript);
     }
   } catch (e) {
-    console.warn('LLM scoring failed, using mock:', e);
+    console.warn('LLM scoring failed, using rules:', e);
   }
   return mockScore(transcript, metrics);
 }

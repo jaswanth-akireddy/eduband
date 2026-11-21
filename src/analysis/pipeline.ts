@@ -100,7 +100,9 @@ export class InsufficientSpeechError extends Error {
 export async function analyze(
   transcript: Transcript,
   durationSec: number,
-  level: Level
+  level: Level,
+  // What the student was asked. Lets the scorer judge whether they answered it.
+  taskPrompt: string | null = null
 ): Promise<{ metrics: DeterministicMetrics; analysis: Analysis }> {
   // 0. Refuse to score too little speech.
   const speakingSec = speakingSpan(transcript.words);
@@ -116,7 +118,7 @@ export async function analyze(
   const clarity = clarityScore(metrics);
 
   // 3. Judgment pillars via LLM (language, structure, confidence).
-  const llm = await scoreJudgmentPillars(transcript, metrics, level);
+  const llm = await scoreJudgmentPillars(transcript, metrics, level, taskPrompt);
   const llmById = new Map(llm.pillars.map((p) => [p.id, p]));
 
   // 4. Assemble all five core pillars with evidence + tips.
@@ -189,6 +191,8 @@ export async function analyze(
     frameworkVersion: FRAMEWORK_VERSION,
     scoringSource: llm.source,
     transcriptSource: transcript.source ?? 'stt',
+    ...(llm.mistakes ? { mistakes: llm.mistakes } : {}),
+    ...(llm.onTopic !== undefined ? { onTopic: llm.onTopic } : {}),
   };
 
   return { metrics, analysis };

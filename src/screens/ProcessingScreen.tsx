@@ -57,10 +57,10 @@ export default function ProcessingScreen({ route, navigation }: Props) {
         // Pipeline: STT -> metrics -> LLM scoring -> store
         const transcript = await transcribe(audioUri, durationSec);
         logInfo('Scoring transcript…');
-        const { metrics, analysis } = await analyze(transcript, durationSec, level);
+        const task = taskById(taskId);
+        const { metrics, analysis } = await analyze(transcript, durationSec, level, task?.prompt ?? null);
         logEvent('Scoring complete', { ci: analysis.ci });
 
-        const task = taskById(taskId);
         const session: Session = {
           // uuid so the same id is used locally and as the Supabase row id
           id: Crypto.randomUUID(),

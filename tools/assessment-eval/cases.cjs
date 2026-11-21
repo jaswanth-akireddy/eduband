@@ -1,4 +1,4 @@
-// Designed recordings. Prompt for all: "Talk about a place you love."
+// Designed recordings, all answering the same task (PROMPT below).
 // Several cases are the STRONG answer with ONE thing changed, so any score
 // difference has a single cause.
 const STRONG = `My favourite place is the old library near my school. It is a quiet building with tall windows and creaky wooden floors. I love it for two reasons. First, it gives me space to think, because at home there is always noise. Second, the librarian, Mrs Iyer, recommends books that I would never choose myself, and some of them have changed how I see the world. Last month she gave me a novel about a girl growing up in Kerala, and I finished it in two evenings. So for me, the library is not just a room full of books. It is the place where I became curious.`;
@@ -20,17 +20,21 @@ const OFF_TOPIC = `Cricket is the most popular sport in India and it is played b
 
 const SHORT = `My favourite place is the library. It is quiet and I enjoy reading there.`;
 
+// The task every case answers, sent to the scorer as in the app.
+const PROMPT = 'Describe your favourite place. What makes it special to you?';
+
 module.exports = [
-  // id, what it tests, text, speech options, what a fair system should do
-  ['STRONG', 'Fluent, organised, rich answer', STRONG, { wpm: 145, sentencePause: 0.45 }, 'Should score highest'],
-  ['STRONG_LIKE', 'STRONG + correct uses of like/so/actually/kind of', STRONG_LIKE, { wpm: 145, sentencePause: 0.45 }, 'Should match STRONG'],
-  ['ACCENT', 'STRONG, same words, ASR less sure (non-native accent)', STRONG, { wpm: 145, sentencePause: 0.45, conf: 0.78 }, 'Should match STRONG'],
-  ['THINK_FIRST', 'STRONG, 4s silence before speaking', STRONG, { wpm: 145, sentencePause: 0.45, lead: 4.0, tail: 3.0 }, 'Should match STRONG'],
-  ['MUMBLED', 'STRONG, but 1 word in 8 barely recognisable', STRONG, { wpm: 145, sentencePause: 0.45, unclearEvery: 8 }, 'Clarity clearly below STRONG'],
-  ['GRAMMAR', 'STRONG content, frequent grammar errors', GRAMMAR, { wpm: 140, sentencePause: 0.45, conf: 0.93 }, 'Language clearly below STRONG'],
-  ['AVERAGE', 'Simple answer, some um/uh, some pauses', AVERAGE, { wpm: 120, sentencePause: 0.7, fillerPause: 0.8, conf: 0.92 }, 'Clearly below STRONG'],
-  ['WEAK', 'Repetitive, many fillers, long pauses', WEAK, { wpm: 85, sentencePause: 1.8, fillerPause: 1.5, conf: 0.85 }, 'Lowest score'],
-  ['OFF_TOPIC', 'Fluent, but ignores the prompt', OFF_TOPIC, { wpm: 145, sentencePause: 0.45 }, 'Penalised for relevance'],
-  ['SHORT', '14 words, about 7 seconds', SHORT, { wpm: 130, sentencePause: 0.45 }, 'Flagged too short to judge'],
+  // id, what it tests, text, speech options, what a fair system should do, task prompt
+  ['STRONG', 'Fluent, organised, rich answer', STRONG, { wpm: 145, sentencePause: 0.45 }, 'Should score highest', PROMPT],
+  ['STRONG_LIKE', 'STRONG + correct uses of like/so/actually/kind of', STRONG_LIKE, { wpm: 145, sentencePause: 0.45 }, 'Should match STRONG', PROMPT],
+  ['ACCENT', 'STRONG, same words, ASR less sure (non-native accent)', STRONG, { wpm: 145, sentencePause: 0.45, conf: 0.78 }, 'Should match STRONG', PROMPT],
+  ['THINK_FIRST', 'STRONG, 4s silence before speaking', STRONG, { wpm: 145, sentencePause: 0.45, lead: 4.0, tail: 3.0 }, 'Should match STRONG', PROMPT],
+  ['MUMBLED', 'STRONG, but 1 word in 8 barely recognisable', STRONG, { wpm: 145, sentencePause: 0.45, unclearEvery: 8 }, 'Clarity clearly below STRONG', PROMPT],
+  ['GRAMMAR', 'STRONG content, frequent grammar errors', GRAMMAR, { wpm: 140, sentencePause: 0.45, conf: 0.93 }, 'Language clearly below STRONG', PROMPT],
+  ['AVERAGE', 'Simple answer, some um/uh, some pauses', AVERAGE, { wpm: 120, sentencePause: 0.7, fillerPause: 0.8, conf: 0.92 }, 'Clearly below STRONG', PROMPT],
+  ['WEAK', 'Repetitive, many fillers, long pauses', WEAK, { wpm: 85, sentencePause: 1.8, fillerPause: 1.5, conf: 0.85 }, 'Lowest score', PROMPT],
+  ['OFF_TOPIC', 'Fluent, but ignores the prompt', OFF_TOPIC, { wpm: 145, sentencePause: 0.45 }, 'Penalised for relevance', PROMPT],
+  ['SHORT', '14 words, about 7 seconds', SHORT, { wpm: 130, sentencePause: 0.45 }, 'Flagged too short to judge', PROMPT],
 ];
 module.exports.TEXT = { STRONG, STRONG_LIKE, GRAMMAR };
+module.exports.PROMPT = PROMPT;
