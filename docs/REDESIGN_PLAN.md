@@ -1,7 +1,32 @@
 # EduBand UI/UX Redesign Plan
 
-Status: **Iteration 1 of 3: choosing a direction.** No app code changes until the
-design is signed off.
+Status: **Iteration 2: refining the current design ("Current+").** Iteration 1
+ended with the decision to keep the current design rather than adopt A, B or C.
+No app code changes until the design is signed off.
+
+## Iteration 2: Current+ (current design, refined)
+
+Board: `docs/redesign/iteration-2/board-plus.png`. Top row is the live app;
+bottom row is the proposal, with numbered markers matching this list. Same
+tokens, same Poppins, same components throughout.
+
+| # | Screen | Change | Why |
+|---|---|---|---|
+| 1 | Home | The Communication Index leads: 72 at 56px with the trend beside it | It was 32px, while the three rings it summarises were 88px. Design kit rule: one thing leads. |
+| 2 | All | Score colour follows the same thresholds as the word | 72, 74 and 71 were labelled "Solid" but painted amber, because `scoreColor` turns green at 75 and `scoreBand` says "Solid" from 70. |
+| 3 | Home | "Next: Structure" instead of a bare "Structure" chip | The chip did not say what it meant. |
+| 4 | Record | One brand red: the record button matches the Home button | Since the AA fix the app used two reds (`#E30029` buttons, `#FF385C` record button). |
+| 5 | Record | A target track: "Aim for 1 to 2 min" | Students had no sense of how long to talk. |
+| 6 | Record | One quick tip while idle | The space between prompt and button was empty. |
+| 7 | Report | The lesson first: your words and "Try this next" right under the score | They were several screens down, below the gauge, radar, bars and strengths. |
+| 8 | Report | Labelled bars replace the radar; the focus pillar is tagged | The radar duplicated the bar list under it, and clipped "Confidence" and "Clarity". ui-ux-pro-max: bars for comparing categories; radar not for one entity or precise comparison. |
+| 9 | Report | Tidier gauge: no 0/100 end ticks; trend uses the same icon as Home | The ticks repeated "out of 100"; the trend used a triangle text glyph instead of an icon. |
+| 10 | Report | Evidence box without the one-sided coloured border; a quote icon instead | The design kit bans one-sided borders as a generated-UI tell. |
+| 11 | Report | "What's working" uses the app's check icon | It used a check-mark text glyph, one of 18 the emoji gate flags. |
+
+Also noted from the code, to fix during implementation: `pillarColors` gives
+Fluency (`#FF385C`) and Confidence (`#E11D48`) near-identical reds, and
+`scoreColor`/`pillarColor` read the static light palette, so they ignore dark mode.
 
 Design intelligence: [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
 v2.15.0 (MIT), installed at `.claude/skills/ui-ux-pro-max/`.
@@ -157,3 +182,4 @@ your phone before the next phase starts.
 |---|---|
 | 2026-11-21 | Use `ui-ux-pro-max-skill` for design direction. Installed only the core skill; excluded its `stack/` folder, whose `settings.json` enables all project MCP servers and grants broad read access. |
 | 2026-11-21 | Rejected the generator's children's-app picks (Comic Neue, Varela Round) for this audience. |
+| 2026-11-21 | Keep the current design (Poppins, grouped canvas, Rausch red, rings) instead of directions A, B or C. Iteration 2 refines it as "Current+". Sections 4 to 6 below are kept for the record. |
