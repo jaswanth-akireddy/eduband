@@ -1,8 +1,9 @@
 # EduBand UI/UX Redesign Plan
 
-Status: **Iteration 2: refining the current design ("Current+").** Iteration 1
-ended with the decision to keep the current design rather than adopt A, B or C.
-No app code changes until the design is signed off.
+Status: **Iteration 2 approved and implemented on Home, Record and Report.**
+Iteration 1 ended with the decision to keep the current design rather than
+adopt A, B or C. Next: apply the same treatment to the remaining screens.
+Live result: `docs/redesign/iteration-2/implemented.png` (light and dark).
 
 ## Iteration 2: Current+ (current design, refined)
 
@@ -182,4 +183,5 @@ your phone before the next phase starts.
 |---|---|
 | 2026-11-21 | Use `ui-ux-pro-max-skill` for design direction. Installed only the core skill; excluded its `stack/` folder, whose `settings.json` enables all project MCP servers and grants broad read access. |
 | 2026-11-21 | Rejected the generator's children's-app picks (Comic Neue, Varela Round) for this audience. |
+| 2026-11-21 | Current+ approved. All eleven changes implemented, plus five distinct pillar colours and theme-aware score and pillar colours. |
 | 2026-11-21 | Keep the current design (Poppins, grouped canvas, Rausch red, rings) instead of directions A, B or C. Iteration 2 refines it as "Current+". Sections 4 to 6 below are kept for the record. |

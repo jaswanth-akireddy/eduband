@@ -7,7 +7,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { font, makeStyles, pillarColor, scoreBand, scoreColor, spacing, useColors, weight } from '@/theme';
+import { font, makeStyles, scoreBand, scoreColor, scoreTextColor, spacing, useColors, weight } from '@/theme';
 import { getCachedSessions, getProfile, getSessions } from '@/storage/store';
 import { currentUserId, subscribeSessions } from '@/services/sessionsSync';
 import { PillarId, Session, StudentProfile } from '@/types';
@@ -96,6 +96,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   const latest = sessions[0];
   const trend = trendOf(sessions);
+  const focusId = latest?.analysis.focusAreas[0];
 
   return (
     <GradientBackground>
@@ -144,36 +145,57 @@ export default function HomeScreen({ navigation }: Props) {
           ) : latest ? (
             <FadeIn delay={80}>
             <Card variant="glass" style={{ paddingVertical: spacing.lg }}>
+              {/* Overline + what to work on next */}
               <View style={styles.ciHeader}>
-                <View>
-                  <Text style={styles.overline}>COMMUNICATION INDEX</Text>
-                  <View style={styles.ciScoreRow}>
-                    <AnimatedNumber value={latest.analysis.ci} style={styles.ciNumber} />
-                    <View
-                      style={[
-                        styles.bandPill,
-                        { backgroundColor: scoreColor(latest.analysis.ci) + '16' },
-                      ]}
-                    >
-                      <Text style={[styles.bandText, { color: scoreColor(latest.analysis.ci) }]}>
-                        {scoreBand(latest.analysis.ci)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {latest.analysis.focusAreas[0] && (
+                <Text style={styles.overline}>COMMUNICATION INDEX</Text>
+                {focusId && (
                   <View style={styles.focusChip}>
                     <View
                       style={[
                         styles.focusDot,
-                        { backgroundColor: pillarColor(latest.analysis.focusAreas[0]) },
+                        { backgroundColor: scoreColor(pillarScore(latest, focusId), colors) },
                       ]}
                     />
-                    <Text style={styles.focusChipText}>
-                      {pillarDef(latest.analysis.focusAreas[0]).short}
-                    </Text>
+                    <Text style={styles.focusChipText}>Next: {pillarDef(focusId).short}</Text>
                   </View>
                 )}
+              </View>
+
+              {/* The Index leads: it is the headline, so it is the largest number on the card. */}
+              <View style={styles.ciScoreRow}>
+                <AnimatedNumber value={latest.analysis.ci} style={styles.ciNumber} />
+                <View style={styles.ciMeta}>
+                  <View
+                    style={[
+                      styles.bandPill,
+                      { backgroundColor: scoreColor(latest.analysis.ci, colors) + '16' },
+                    ]}
+                  >
+                    <Text style={[styles.bandText, { color: scoreTextColor(latest.analysis.ci, colors) }]}>
+                      {scoreBand(latest.analysis.ci)}
+                    </Text>
+                  </View>
+                  {trend != null && (
+                    <View style={styles.trendInline}>
+                      {trend !== 0 && (
+                        <Icon
+                          name={trend > 0 ? 'trendUp' : 'trendDown'}
+                          size={15}
+                          color={trend > 0 ? colors.goodText : colors.textMuted}
+                          strokeWidth={2}
+                        />
+                      )}
+                      <Text
+                        style={[
+                          styles.trendInlineText,
+                          { color: trend > 0 ? colors.goodText : colors.textMuted },
+                        ]}
+                      >
+                        {shortTrend(trend)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
 
               <View style={styles.ringsRow}>
@@ -190,15 +212,9 @@ export default function HomeScreen({ navigation }: Props) {
                 accessibilityLabel="Open your latest report"
                 style={({ pressed }) => [styles.trendRow, pressed && { opacity: 0.7 }]}
               >
-                {trend != null && trend !== 0 ? (
-                  <Icon
-                    name={trend > 0 ? 'trendUp' : 'trendDown'}
-                    size={15}
-                    color={trend > 0 ? colors.good : colors.textMuted}
-                    strokeWidth={2}
-                  />
-                ) : null}
-                <Text style={styles.trendText}>{trendText(sessions)}</Text>
+                <Text style={styles.trendText}>
+                  {trend == null ? 'See your first report' : 'See your full report'}
+                </Text>
                 <Icon name="chevronRight" size={14} color={colors.textFaint} />
               </Pressable>
             </Card>
@@ -252,7 +268,7 @@ export default function HomeScreen({ navigation }: Props) {
                         </Text>
                         <Text style={styles.recentDate}>{formatDate(s.createdAt)}</Text>
                       </View>
-                      <Text style={[styles.recentScore, { color: scoreColor(s.analysis.ci) }]}>
+                      <Text style={[styles.recentScore, { color: scoreTextColor(s.analysis.ci, colors) }]}>
                         {s.analysis.ci}
                       </Text>
                       <Icon name="chevronRight" size={15} color={colors.textFaint} />
@@ -284,12 +300,10 @@ function trendOf(sessions: Session[]): number | null {
   return sessions[0].analysis.ci - sessions[1].analysis.ci;
 }
 
-function trendText(sessions: Session[]): string {
-  const diff = trendOf(sessions);
-  if (diff == null) return 'Record again to start tracking your growth';
-  if (diff > 0) return `Up ${diff} points since your last session`;
-  if (diff < 0) return `Down ${Math.abs(diff)} — your next session can turn it around`;
-  return 'Holding steady since your last session';
+function shortTrend(diff: number): string {
+  if (diff > 0) return `Up ${diff} since last`;
+  if (diff < 0) return `Down ${Math.abs(diff)} since last`;
+  return 'Same as last time';
 }
 
 function formatDate(ms: number): string {
@@ -326,22 +340,25 @@ const useStyles = makeStyles((colors) => ({
   ciHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  ciScoreRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
+  ciScoreRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  // The headline. At 32px it was smaller than the 88px rings it summarises.
   ciNumber: {
-    fontSize: 32,
+    fontSize: 56,
     fontWeight: weight.bold,
     color: colors.text,
-    letterSpacing: -0.5,
-    lineHeight: 36,
+    letterSpacing: -1.5,
+    lineHeight: 62,
   },
+  ciMeta: { marginLeft: 12, alignItems: 'flex-start' },
   bandPill: {
-    marginLeft: 10,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
   },
+  trendInline: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
+  trendInlineText: { fontSize: font.small, fontWeight: weight.semibold },
   bandText: { fontSize: font.tiny, fontWeight: weight.bold, letterSpacing: 0.3 },
 
   focusChip: {

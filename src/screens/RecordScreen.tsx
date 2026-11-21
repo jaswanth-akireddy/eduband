@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { font, makeStyles, radius, spacing, useColors } from '@/theme';
+import { font, makeStyles, radius, shadow, spacing, useColors } from '@/theme';
 import { taskById } from '@/data/tasks';
 import { getConsentCache, hasValidConsent } from '@/storage/store';
 import {
@@ -21,6 +21,13 @@ import { notifyWarning, tapLight, tapMedium } from '@/services/haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
+const TIPS = [
+  'Pause for a breath instead of saying "um".',
+  'Signpost your ideas: first, second, finally.',
+  'Slow down on the point you most want remembered.',
+  'Open with your main idea, then explain it.',
+];
+
 export default function RecordScreen({ route, navigation }: Props) {
   const colors = useColors();
   const styles = useStyles();
@@ -28,6 +35,14 @@ export default function RecordScreen({ route, navigation }: Props) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [starting, setStarting] = useState(false);
+  const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
+  // A target gives the take a shape: guided tasks have their own length,
+  // free speaking aims for one to two minutes.
+  const target = task?.suggestedSeconds ?? 120;
+  const targetText = task
+    ? `Aim for about ${Math.max(1, Math.round(target / 60))} min`
+    : 'Aim for 1 to 2 min';
+  const targetPct = Math.min(1, elapsed / target);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
@@ -50,7 +65,7 @@ export default function RecordScreen({ route, navigation }: Props) {
       e.preventDefault();
       Alert.alert(
         'Discard this recording?',
-        "You're still recording — leaving now throws this take away.",
+        "You're still recording. Leaving now throws this take away.",
         [
           { text: 'Keep recording', style: 'cancel' },
           {
@@ -151,7 +166,7 @@ export default function RecordScreen({ route, navigation }: Props) {
     if (durationSec < 5) {
       logWarn('Recording too short, discarded', { durationSec: Math.round(durationSec) });
       notifyWarning();
-      setElapsed(0); // the take is gone — don't leave a stale timer implying otherwise
+      setElapsed(0); // the take is gone; don't leave a stale timer implying otherwise
       Alert.alert(
         'A little longer',
         'Try to speak for at least a few seconds so we can give useful feedback.'
@@ -192,8 +207,22 @@ export default function RecordScreen({ route, navigation }: Props) {
 
         <View style={styles.center}>
           <Text style={styles.timer}>{formatTime(elapsed)}</Text>
+          <View
+            style={styles.targetWrap}
+            accessible
+            accessibilityLabel={`${targetText}. ${formatTime(elapsed)} so far.`}
+          >
+            <View style={styles.targetTrack}>
+              <View style={[styles.targetFill, { width: `${targetPct * 100}%` }]} />
+            </View>
+            <View style={styles.targetLabels}>
+              <Text style={styles.targetEnd}>0:00</Text>
+              <Text style={styles.targetMid}>{targetText}</Text>
+              <Text style={styles.targetEnd}>{formatTime(target).replace(/^0/, '')}</Text>
+            </View>
+          </View>
           <View style={styles.waveSlot}>
-            <RecordingWave color={colors.low} active={recording} />
+            <RecordingWave color={colors.primaryStrong} active={recording} />
           </View>
           <View style={styles.btnWrap}>
             {recording && (
@@ -228,23 +257,31 @@ export default function RecordScreen({ route, navigation }: Props) {
           <Text style={styles.recLabel}>
             {starting ? 'Starting…' : recording ? 'Tap to stop' : 'Tap to record'}
           </Text>
-          {task ? (
-            <Text style={styles.targetLabel}>
-              Target {formatTime(task.suggestedSeconds)}
-            </Text>
-          ) : null}
         </View>
 
         <View>
           {recording ? (
             <Button title="Stop & analyse" onPress={onStop} />
           ) : (
+            <View>
+            {!starting && (
+              <View style={styles.tipCard}>
+                <View style={styles.tipIcon}>
+                  <Icon name="bulb" size={17} color={colors.midText} />
+                </View>
+                <Text style={styles.tipText}>
+                  <Text style={styles.tipLead}>Quick tip: </Text>
+                  {tip}
+                </Text>
+              </View>
+            )}
             <View style={styles.privacyRow}>
               <Icon name="lock" size={14} color={colors.textFaint} />
               <Text style={styles.privacyNote}>
                 Recording only while you hold a session. Raw audio is deleted
                 after analysis.
               </Text>
+            </View>
             </View>
           )}
         </View>
@@ -302,7 +339,7 @@ const useStyles = makeStyles((colors) => ({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: colors.low,
+    backgroundColor: colors.primaryStrong,
   },
   // Voice-memos register: a quiet outer ring with a red core that morphs from
   // circle (idle) to rounded square (recording).
@@ -316,21 +353,43 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  recBtnActive: { borderColor: colors.low + '55' },
-  micDot: { width: 68, height: 68, borderRadius: 34, backgroundColor: colors.primary },
-  stopIcon: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.low },
+  recBtnActive: { borderColor: colors.primaryStrong + '55' },
+  // One brand red: matches the Home button (#E30029), not the pinker #FF385C.
+  micDot: { width: 68, height: 68, borderRadius: 34, backgroundColor: colors.primaryStrong },
+  stopIcon: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.primaryStrong },
   recLabel: {
     color: colors.textMuted,
     fontSize: font.small,
     fontWeight: '500',
     marginTop: spacing.lg,
   },
-  targetLabel: {
-    color: colors.textFaint,
-    fontSize: font.tiny,
-    fontVariant: ['tabular-nums'],
-    marginTop: 4,
+  targetWrap: { width: 260, marginTop: spacing.sm, marginBottom: spacing.md },
+  targetTrack: { height: 4, borderRadius: 2, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  targetFill: { height: 4, borderRadius: 2, backgroundColor: colors.primaryStrong },
+  targetLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  targetEnd: { color: colors.textMuted, fontSize: font.tiny, fontVariant: ['tabular-nums'] },
+  targetMid: { color: colors.textMuted, fontSize: font.tiny, fontWeight: '500' },
+  tipCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: spacing.lg,
+    ...shadow.card,
   },
+  tipIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: colors.mid + '1F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tipText: { flex: 1, color: colors.text, fontSize: font.small, lineHeight: 18 },
+  tipLead: { fontWeight: '600' },
   privacyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',

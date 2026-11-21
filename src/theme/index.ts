@@ -1,8 +1,8 @@
-// EduBand design system — "Belo 2.0".
+// EduBand design system: "Belo 2.0".
 // Grouped-canvas layout (Apple Health / iOS Settings pattern): a soft neutral
 // background with borderless white cards floating on a whisper of shadow.
 // Typography carries the hierarchy (700 titles → 600 headlines → 400 body →
-// muted captions); colour is used with restraint — neutrals dominate and the
+// muted captions); colour is used with restraint: neutrals dominate and the
 // Rausch coral appears only on primary actions and active states.
 
 import { PillarId } from '@/types';
@@ -24,17 +24,17 @@ export const lightColors = {
   text: '#1B1B1F', // near-black ink, slightly cool
   // Legacy alias: older screens use *OnDark tokens as their page text.
   textOnDark: '#1B1B1F',
-  textMuted: '#71717A', // secondary label — 4.83:1 on surface
-  textFaint: '#70707E', // tertiary label — 4.87:1 on surface, 4.52:1 on bg
+  textMuted: '#71717A', // secondary label, 4.83:1 on surface
+  textFaint: '#70707E', // tertiary label, 4.87:1 on surface, 4.52:1 on bg
   textMutedOnDark: '#71717A',
   line: 'rgba(17, 17, 26, 0.06)', // hairline separators
   border: '#E4E4E9',
 
-  // Rausch — the one bold accent. Used sparingly.
+  // Rausch: the one bold accent. Used sparingly.
   blue: '#0E8488',
   violet: '#FF385C',
   pink: '#F1244D',
-  primary: '#FF385C', // 3.52:1 on surface — graphics only, never under text
+  primary: '#FF385C', // 3.52:1 on surface, graphics only, never under text
   // The deepest-but-still-Rausch value that gives a white label 4.5:1. Used as
   // the primary button fill and as Rausch-as-text (links, inline emphasis).
   // #FF385C cannot carry white text at AA at any weight below ~19px bold, and
@@ -46,7 +46,7 @@ export const lightColors = {
   accent: '#0E8488', // 4.49:1 on surface
   accentText: '#0D7D81', // 4.92:1 on surface, 4.56:1 on bg
 
-  // Score bands — calm, legible semantics (never neon, never shaming).
+  // Score bands: calm, legible semantics (never neon, never shaming).
   //
   // Each band is split in two because WCAG holds text and graphics to
   // different thresholds: a fill or ring stroke needs 3:1, the same colour as
@@ -88,7 +88,7 @@ export const lightColors = {
 
 export type Palette = typeof lightColors;
 
-// Dark palette — iOS-dark grouped: true-dark canvas, raised graphite cards.
+// Dark palette: iOS-dark grouped: true-dark canvas, raised graphite cards.
 // Brand + score accents stay vivid; surfaces/text/lines flip.
 export const darkColors: Palette = {
   ...lightColors,
@@ -149,17 +149,27 @@ export const darkColors: Palette = {
 export const colors: Palette = lightColors;
 
 // Each pillar keeps its own identity colour (reads cleanly on light and dark).
+// [light theme, dark theme]. Five clearly different hues: Fluency and
+// Confidence used to be #FF385C and #E11D48, two reds nobody could tell apart.
+// Every value is at least 4.5:1 against its theme's surface, because these are
+// used as text (Practice skill tags), not only as fills.
 export const pillarColors: Record<PillarId, readonly [string, string]> = {
-  fluency: ['#FF385C', '#E0284C'],
-  clarity: ['#0E8488', '#0B6B6E'],
-  language: ['#6366F1', '#4F46E5'],
-  structure: ['#E8930C', '#C97B06'],
-  confidence: ['#E11D48', '#BE123C'],
-  interaction: ['#188A4C', '#136F3D'],
+  fluency: ['#D11A3B', '#FF6B81'], // 5.35:1 / 6.33:1
+  clarity: ['#0D7D81', '#2BB7BC'], // 4.92:1 / 7.09:1
+  language: ['#4F46E5', '#8B8CF8'], // 6.29:1 / 5.94:1
+  structure: ['#9E6408', '#F5A623'], // 4.91:1 / 8.55:1
+  confidence: ['#7C3AED', '#B794F6'], // 5.70:1 / 7.08:1
+  interaction: ['#168147', '#34C77B'], // 4.92:1 / 7.92:1
 };
 
-export function pillarColor(id: PillarId): string {
-  return pillarColors[id]?.[0] ?? colors.primary;
+const isDarkPalette = (p: Palette) => p.bg === darkColors.bg;
+
+// Pass the palette from useColors(). The old signature read the static light
+// palette, so pillar and score colours never followed dark mode.
+export function pillarColor(id: PillarId, palette: Palette = colors): string {
+  const pair = pillarColors[id];
+  if (!pair) return palette.primary;
+  return isDarkPalette(palette) ? pair[1] : pair[0];
 }
 
 export const spacing = {
@@ -226,10 +236,25 @@ export function scoreGradient(score: number): readonly [string, string] {
   return colors.lowGradient;
 }
 
-export function scoreColor(score: number): string {
-  if (score >= 75) return colors.good;
-  if (score >= 50) return colors.mid;
-  return colors.low;
+// Colour follows the same thresholds as scoreBand(), so the word and the colour
+// never disagree. Before, scoreColor turned green at 75 while scoreBand said
+// "Solid" from 70: a 72 was labelled Solid and painted amber (caution).
+//   Strong / Solid (70+)  -> good
+//   Developing (55-69)    -> mid
+//   Emerging / Early      -> low
+//
+// scoreColor is for fills, rings and bars (3:1 applies). Use scoreTextColor for
+// the score as text (4.5:1 applies); the amber fill is only 3.27:1 as text.
+export function scoreColor(score: number, palette: Palette = colors): string {
+  if (score >= 70) return palette.good;
+  if (score >= 55) return palette.mid;
+  return palette.low;
+}
+
+export function scoreTextColor(score: number, palette: Palette = colors): string {
+  if (score >= 70) return palette.goodText;
+  if (score >= 55) return palette.midText;
+  return palette.lowText;
 }
 
 export function scoreBand(score: number): string {

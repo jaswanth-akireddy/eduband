@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { colors, font, makeStyles, radius, scoreColor, shadow, spacing } from '@/theme';
+import { colors, font, makeStyles, radius, scoreTextColor, shadow, spacing } from '@/theme';
 import { clearRole } from '@/storage/store';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -55,7 +55,7 @@ export default function ProfessionalHomeScreen({ navigation }: Props) {
               <Text style={styles.latestTitle}>Latest: Mock interview</Text>
               <Text style={styles.latestSub}>Strong structure · reduce fillers (12)</Text>
             </View>
-            <Text style={[styles.latestScore, { color: scoreColor(79) }]}>79</Text>
+            <Text style={[styles.latestScore, { color: scoreTextColor(79, colors) }]}>79</Text>
           </Card>
 
           <Button

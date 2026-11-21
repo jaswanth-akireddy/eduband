@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TeacherTabsParamList } from '@/navigation/types';
-import { font, makeStyles, scoreColor, spacing } from '@/theme';
+import { font, makeStyles, scoreTextColor, spacing, useColors } from '@/theme';
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -17,6 +17,7 @@ type Props = CompositeScreenProps<
 >;
 
 export default function TeacherSessionsScreen({ navigation }: Props) {
+  const colors = useColors();
   const styles = useStyles();
   return (
     <GradientBackground>
@@ -33,7 +34,7 @@ export default function TeacherSessionsScreen({ navigation }: Props) {
                     {Math.round(s.durationSec / 60)} min · coverage {s.analysis.coverage.coveragePct}%
                   </Text>
                 </View>
-                <Text style={[styles.score, { color: scoreColor(s.analysis.ci) }]}>{s.analysis.ci}</Text>
+                <Text style={[styles.score, { color: scoreTextColor(s.analysis.ci, colors) }]}>{s.analysis.ci}</Text>
               </Card>
             </Pressable>
           ))}

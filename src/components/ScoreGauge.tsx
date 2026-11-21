@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
-import { scoreBand, scoreColor, useColors } from '@/theme';
-import { POPPINS_REGULAR } from '@/theme/fonts';
+import { scoreBand, scoreColor, scoreTextColor, useColors } from '@/theme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
@@ -11,8 +10,9 @@ interface Props {
 }
 
 // Credit-score style gauge for the Communication Index: a 270° arc (open at the
-// bottom) coloured by band, with the score, "out of 100", a band pill, and
-// 0/100 end ticks. Drawn entirely in SVG so labels always align with the arc.
+// bottom) coloured by band, with the score, "out of 100" and a band pill.
+// No 0/100 end ticks: they only repeated "out of 100". Drawn entirely in SVG
+// so labels always align with the arc.
 // Coordinates live in a fixed 300-wide space and scale via the `size` prop.
 const CX = 150;
 const CY = 160;
@@ -36,7 +36,8 @@ function arc(fromDeg: number, toDeg: number): string {
 export default function ScoreGauge({ score, size = 240 }: Props) {
   const colors = useColors();
   const clamped = Math.max(0, Math.min(100, score));
-  const color = scoreColor(clamped);
+  const color = scoreColor(clamped, colors); // the arc (3:1 applies)
+  const textColor = scoreTextColor(clamped, colors); // the band word (4.5:1)
   const band = scoreBand(clamped);
 
   // Entrance: the arc sweeps and the score counts up together.
@@ -57,12 +58,9 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
     }).start();
     return () => anim.removeListener(id);
   }, [clamped, anim, reduceMotion]);
-  const [t0x] = polar(START, R + 4);
-  const [t1x] = polar(START + SWEEP, R + 4);
-  const tickY = CY + R * Math.sin((45 * Math.PI) / 180) + 20;
 
   return (
-    <Svg width={size} height={size * 0.72} viewBox="0 44 300 216">
+    <Svg width={size} height={size * 0.64} viewBox="0 44 300 192">
       {/* Track */}
       <Path
         d={arc(START, START + SWEEP)}
@@ -110,17 +108,10 @@ export default function ScoreGauge({ score, size = 240 }: Props) {
         y={CY + 61}
         fontSize={13}
         fontFamily="Poppins_600SemiBold"
-        fill={color}
+        fill={textColor}
         textAnchor="middle"
       >
         {band}
-      </SvgText>
-      {/* End ticks */}
-      <SvgText x={t0x} y={tickY} fontSize={11} fontFamily={POPPINS_REGULAR} fill={colors.textFaint} textAnchor="middle">
-        0
-      </SvgText>
-      <SvgText x={t1x} y={tickY} fontSize={11} fontFamily={POPPINS_REGULAR} fill={colors.textFaint} textAnchor="middle">
-        100
       </SvgText>
     </Svg>
   );

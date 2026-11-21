@@ -12,8 +12,8 @@ import {
   radius,
   scoreColor,
   scoreBand,
+  scoreTextColor,
   spacing,
-  pillarColor,
   useColors,
 } from '@/theme';
 import { getSession, getSessions } from '@/storage/store';
@@ -22,7 +22,7 @@ import { taskById } from '@/data/tasks';
 import { pillarDef } from '@/analysis/framework';
 import GradientBackground from '@/components/GradientBackground';
 import ScoreGauge from '@/components/ScoreGauge';
-import PillarRadar from '@/components/PillarRadar';
+import Icon from '@/components/Icon';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Confetti from '@/components/Confetti';
@@ -133,74 +133,50 @@ export default function ReportScreen({ route, navigation }: Props) {
 
       {/* Communication Index */}
       <FadeIn>
-      <Card style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
+      <Card style={{ alignItems: 'center', paddingVertical: spacing.lg }}>
         <Text style={styles.indexTitle}>Communication Index</Text>
-        <ScoreGauge score={analysis.ci} size={252} />
+        <ScoreGauge score={analysis.ci} size={240} />
         {trend != null && (
-          <Text
-            style={[
-              styles.trend,
-              { color: trend >= 0 ? colors.good : colors.low },
-            ]}
-          >
-            {trend > 0 ? '▲' : trend < 0 ? '▼' : '▬'}{' '}
-            {trend === 0
-              ? 'Same as last session'
-              : `${Math.abs(trend)} points ${trend > 0 ? 'up' : 'down'} from last session`}
-          </Text>
+          <View style={styles.trendRow}>
+            {trend !== 0 && (
+              <Icon
+                name={trend > 0 ? 'trendUp' : 'trendDown'}
+                size={15}
+                color={trend > 0 ? colors.goodText : colors.textMuted}
+                strokeWidth={2}
+              />
+            )}
+            <Text
+              style={[styles.trend, { color: trend > 0 ? colors.goodText : colors.textMuted }]}
+            >
+              {trend === 0
+                ? 'Same as last session'
+                : `${Math.abs(trend)} points ${trend > 0 ? 'up' : 'down'} from last session`}
+            </Text>
+          </View>
         )}
       </Card>
       </FadeIn>
 
-      {/* Pillar radar */}
-      <Card>
-        <Text style={styles.sectionTitle}>Your five pillars</Text>
-        <PillarRadar pillars={analysis.pillars} />
-        <View style={styles.pillarList}>
-          {analysis.pillars.map((p) => (
-            <View key={p.id} style={styles.pillarRow}>
-              <Text style={styles.pillarName}>{p.label}</Text>
-              <View style={styles.barTrack}>
-                <View
-                  style={[
-                    styles.barFill,
-                    { width: `${p.score}%`, backgroundColor: scoreColor(p.score) },
-                  ]}
-                />
-              </View>
-              <Text style={[styles.pillarScore, { color: scoreColor(p.score) }]}>
-                {p.score}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </Card>
-
-      {/* Strengths */}
-      <Card>
-        <Text style={styles.sectionTitle}>What's working</Text>
-        {analysis.strengths.map((s, i) => (
-          <View key={i} style={styles.bulletRow}>
-            <Text style={styles.check}>✓</Text>
-            <Text style={styles.bulletText}>{s}</Text>
-          </View>
-        ))}
-      </Card>
-
-      {/* Focus areas with evidence + next step */}
-      <Text style={styles.focusHeading}>Your focus areas</Text>
+      {/* The lesson first: what the student said, and the one thing to try next.
+          This is the most useful part of the report, so it comes straight after
+          the score instead of below the chart and the strengths. */}
+      {focusPillars.length > 0 && <Text style={styles.focusHeading}>Your focus</Text>}
       {focusPillars.map((p) => (
         <Card key={p.id}>
           <View style={styles.focusHeader}>
             <Text style={styles.focusTitle}>{p.label}</Text>
-            <Text style={[styles.focusBand, { color: scoreColor(p.score) }]}>
+            <Text style={[styles.focusBand, { color: scoreTextColor(p.score, colors) }]}>
               {scoreBand(p.score)} · {p.score}
             </Text>
           </View>
           {!!p.why && <Text style={styles.why}>{p.why}</Text>}
           <View style={styles.evidenceBox}>
-            <Text style={styles.evidenceLabel}>From your speech</Text>
-            <Text style={styles.evidenceText}>"{p.evidence}"</Text>
+            <Icon name="quote" size={16} color={colors.textFaint} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.evidenceLabel}>From your speech</Text>
+              <Text style={styles.evidenceText}>"{p.evidence}"</Text>
+            </View>
           </View>
           <View style={styles.tipBox}>
             <Text style={styles.tipLabel}>Try this next</Text>
@@ -208,6 +184,59 @@ export default function ReportScreen({ route, navigation }: Props) {
           </View>
         </Card>
       ))}
+
+      {/* Five pillars as labelled bars. This replaces a radar that repeated
+          these same five numbers and clipped its side labels; bars are the
+          clearer chart for comparing a few scores. */}
+      <Card>
+        <Text style={styles.sectionTitle}>Your five pillars</Text>
+        {analysis.pillars.map((p) => {
+          const isFocus = analysis.focusAreas.includes(p.id);
+          return (
+            <View
+              key={p.id}
+              style={styles.pillarRow}
+              accessible
+              accessibilityLabel={`${p.label}: ${p.score}, ${scoreBand(p.score)}${isFocus ? ', focus area' : ''}`}
+            >
+              <View style={styles.pillarNameWrap}>
+                <Text style={styles.pillarName} numberOfLines={1}>
+                  {pillarDef(p.id).short}
+                </Text>
+                {isFocus && (
+                  <View style={styles.focusTag}>
+                    <Text style={styles.focusTagText}>FOCUS</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.barTrack}>
+                <View
+                  style={[
+                    styles.barFill,
+                    { width: `${p.score}%`, backgroundColor: scoreColor(p.score, colors) },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.pillarScore, { color: scoreTextColor(p.score, colors) }]}>
+                {p.score}
+              </Text>
+            </View>
+          );
+        })}
+      </Card>
+
+      {/* Strengths */}
+      <Card>
+        <Text style={styles.sectionTitle}>What's working</Text>
+        {analysis.strengths.map((s, i) => (
+          <View key={i} style={styles.bulletRow}>
+            <View style={styles.checkDot}>
+              <Icon name="check" size={13} color={colors.goodText} strokeWidth={2.6} />
+            </View>
+            <Text style={styles.bulletText}>{s}</Text>
+          </View>
+        ))}
+      </Card>
 
       {/* Practice suggestion */}
       {suggested && (
@@ -226,7 +255,7 @@ export default function ReportScreen({ route, navigation }: Props) {
         </Card>
       )}
 
-      {/* Transcript — saved with every session, exportable as a text file */}
+      {/* Transcript: saved with every session, exportable as a text file */}
       <Card>
         <Text style={styles.sectionTitle}>Your words</Text>
         <Text style={styles.transcriptText}>{session.transcript.text}</Text>
@@ -258,7 +287,7 @@ export default function ReportScreen({ route, navigation }: Props) {
 function buildTranscriptText(session: Session): string {
   const { analysis } = session;
   const lines = [
-    'EduBand — Session transcript',
+    'EduBand: session transcript',
     '================================',
     `Date:     ${formatDate(session.createdAt)}`,
     `Duration: ${formatDuration(session.durationSec)}`,
@@ -302,7 +331,8 @@ const useStyles = makeStyles((colors) => ({
     letterSpacing: -0.2,
   },
   meta: { fontSize: font.small, color: colors.textMuted, marginTop: 4, marginBottom: spacing.md },
-  trend: { marginTop: spacing.md, fontSize: font.small, fontWeight: '600' },
+  trendRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: spacing.sm },
+  trend: { fontSize: font.small, fontWeight: '600' },
   indexTitle: {
     fontSize: font.tiny,
     fontWeight: '600',
@@ -318,9 +348,18 @@ const useStyles = makeStyles((colors) => ({
     letterSpacing: -0.1,
     marginBottom: spacing.md,
   },
-  pillarList: { marginTop: spacing.lg },
   pillarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
-  pillarName: { width: 92, fontSize: font.tiny, color: colors.text, fontWeight: '600' },
+  // Short names on one line: the full labels wrapped to two lines, so rows
+  // had uneven heights.
+  pillarNameWrap: { width: 122, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pillarName: { fontSize: font.tiny, color: colors.text, fontWeight: '600' },
+  focusTag: {
+    backgroundColor: colors.mid + '1F',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  focusTagText: { fontSize: 9, fontWeight: '700', color: colors.midText, letterSpacing: 0.3 },
   barTrack: {
     flex: 1,
     height: 8,
@@ -331,8 +370,16 @@ const useStyles = makeStyles((colors) => ({
   },
   barFill: { height: 8, borderRadius: radius.pill },
   pillarScore: { width: 28, textAlign: 'right', fontWeight: '700', fontSize: font.small },
-  bulletRow: { flexDirection: 'row', marginBottom: spacing.sm },
-  check: { color: colors.goodText, fontWeight: '700', marginRight: spacing.sm },
+  bulletRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  checkDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.good + '1F',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
   bulletText: { flex: 1, color: colors.text, fontSize: font.body, lineHeight: 22 },
   focusHeading: {
     fontSize: font.tiny,
@@ -344,21 +391,21 @@ const useStyles = makeStyles((colors) => ({
     marginBottom: 10,
     marginLeft: 4,
   },
-  focusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
+  // Score sits under the title rather than beside it: side by side, long
+  // pillar names pushed "Developing · 66" onto two lines, splitting the label
+  // from its number.
+  focusHeader: { marginBottom: spacing.sm },
   focusTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.1 },
-  focusBand: { fontSize: font.small, fontWeight: '600' },
+  focusBand: { fontSize: font.small, fontWeight: '600', marginTop: 2 },
   why: { color: colors.textMuted, fontSize: font.small, marginBottom: spacing.md, lineHeight: 20 },
+  // A full tinted surface with a quote icon. It used a 3px coloured border on
+  // the left edge only, a pattern the design kit bans as a generated-UI tell.
   evidenceBox: {
+    flexDirection: 'row',
+    gap: 10,
     backgroundColor: colors.cardMuted,
     borderRadius: radius.md,
     padding: spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
   },
   evidenceLabel: {
     fontSize: font.tiny,

@@ -70,8 +70,8 @@ export default function PracticeScreen({ navigation }: Props) {
                 </Text>
               </View>
               {t.targetPillars.map((p) => (
-                <View key={p} style={[styles.skillTag, { backgroundColor: pillarColor(p) + '14' }]}>
-                  <Text style={[styles.skillTagText, { color: pillarColor(p) }]}>
+                <View key={p} style={[styles.skillTag, { backgroundColor: pillarColor(p, colors) + '14' }]}>
+                  <Text style={[styles.skillTagText, { color: pillarColor(p, colors) }]}>
                     {pillarDef(p).short}
                   </Text>
                 </View>

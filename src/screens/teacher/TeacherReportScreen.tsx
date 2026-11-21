@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
-import { font, makeStyles, radius, scoreColor, spacing, useColors } from '@/theme';
+import { font, makeStyles, radius, scoreColor, scoreTextColor, spacing, useColors } from '@/theme';
 import { teachingSessionById } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -41,12 +41,12 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
         <View style={styles.scoreRow}>
           <Card style={styles.scoreCard}>
             <Text style={styles.scoreLabel}>DELIVERY</Text>
-            <Text style={[styles.bigScore, { color: scoreColor(analysis.ci) }]}>{analysis.ci}</Text>
+            <Text style={[styles.bigScore, { color: scoreTextColor(analysis.ci, colors) }]}>{analysis.ci}</Text>
             <Text style={styles.scoreHint}>clear & well paced</Text>
           </Card>
           <Card style={styles.scoreCard}>
             <Text style={styles.scoreLabel}>COVERAGE</Text>
-            <Text style={[styles.bigScore, { color: scoreColor(coverage.coveragePct) }]}>
+            <Text style={[styles.bigScore, { color: scoreTextColor(coverage.coveragePct, colors) }]}>
               {coverage.coveragePct}%
             </Text>
             <Text style={styles.scoreHint}>of planned topics</Text>
@@ -79,9 +79,9 @@ export default function TeacherReportScreen({ route, navigation }: Props) {
             <View key={p.id} style={styles.pillarRow}>
               <Text style={styles.pillarName}>{p.label.split(' ')[0]}</Text>
               <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${p.score}%`, backgroundColor: scoreColor(p.score) }]} />
+                <View style={[styles.barFill, { width: `${p.score}%`, backgroundColor: scoreColor(p.score, colors) }]} />
               </View>
-              <Text style={[styles.pillarScore, { color: scoreColor(p.score) }]}>{p.score}</Text>
+              <Text style={[styles.pillarScore, { color: scoreTextColor(p.score, colors) }]}>{p.score}</Text>
             </View>
           ))}
         </Card>

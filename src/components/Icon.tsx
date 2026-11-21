@@ -23,7 +23,9 @@ export type IconName =
   | 'logout'
   | 'swap'
   | 'clock'
-  | 'trash';
+  | 'trash'
+  | 'bulb'
+  | 'quote';
 
 interface Props {
   name: IconName;
@@ -32,7 +34,7 @@ interface Props {
   strokeWidth?: number;
 }
 
-// In-house icon set: 24pt grid, thin rounded stroke — the SF Symbols register.
+// In-house icon set: 24pt grid, thin rounded stroke (the SF Symbols register).
 // One visual voice for every glyph in the app (no emoji, no mixed icon packs).
 export default function Icon({ name, size = 22, color = '#1B1B1F', strokeWidth = 1.8 }: Props) {
   const p = { stroke: color, strokeWidth, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' as const };
@@ -163,6 +165,18 @@ export default function Icon({ name, size = 22, color = '#1B1B1F', strokeWidth =
         <>
           <Circle cx={12} cy={12} r={8.5} {...p} />
           <Path d="M12 7.5V12l3 2" {...p} />
+        </>
+      )}
+      {name === 'bulb' && (
+        <>
+          <Path d="M9 18h6M10 21h4" {...p} />
+          <Path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z" {...p} />
+        </>
+      )}
+      {name === 'quote' && (
+        <>
+          <Path d="M5 7h4v4c0 3-1.2 5-4 6" {...p} />
+          <Path d="M14 7h4v4c0 3-1.2 5-4 6" {...p} />
         </>
       )}
       {name === 'trash' && (

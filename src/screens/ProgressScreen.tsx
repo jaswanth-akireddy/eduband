@@ -7,7 +7,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TabsParamList } from '@/navigation/types';
-import { font, makeStyles, scoreColor, spacing, useColors, weight } from '@/theme';
+import { font, makeStyles, scoreTextColor, spacing, useColors, weight } from '@/theme';
 import { getSessions } from '@/storage/store';
 import { Session } from '@/types';
 import Card from '@/components/Card';
@@ -105,7 +105,7 @@ export default function ProgressScreen({ navigation }: Props) {
                   </Text>
                   <Text style={styles.histDate}>{formatDate(s.createdAt)}</Text>
                 </View>
-                <Text style={[styles.histScoreText, { color: scoreColor(s.analysis.ci) }]}>
+                <Text style={[styles.histScoreText, { color: scoreTextColor(s.analysis.ci, colors) }]}>
                   {s.analysis.ci}
                 </Text>
                 <Icon name="chevronRight" size={15} color={colors.textFaint} />

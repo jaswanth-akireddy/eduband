@@ -6,7 +6,7 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList, TeacherTabsParamList } from '@/navigation/types';
-import { font, makeStyles, radius, scoreColor, spacing, useColors } from '@/theme';
+import { font, makeStyles, radius, scoreColor, scoreTextColor, spacing, useColors } from '@/theme';
 import { DEMO_TEACHING_SESSIONS } from '@/data/teaching';
 import GradientBackground from '@/components/GradientBackground';
 import Card from '@/components/Card';
@@ -75,8 +75,8 @@ export default function TeacherHomeScreen({ navigation }: Props) {
                     {timeAgo(s.date)} · coverage {s.analysis.coverage.coveragePct}%
                   </Text>
                 </View>
-                <View style={[styles.scorePill, { backgroundColor: scoreColor(s.analysis.ci) + '2E' }]}>
-                  <Text style={[styles.scoreText, { color: scoreColor(s.analysis.ci) }]}>
+                <View style={[styles.scorePill, { backgroundColor: scoreColor(s.analysis.ci, colors) + '2E' }]}>
+                  <Text style={[styles.scoreText, { color: scoreTextColor(s.analysis.ci, colors) }]}>
                     {s.analysis.ci}
                   </Text>
                 </View>

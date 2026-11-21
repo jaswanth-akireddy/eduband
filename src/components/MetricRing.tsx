@@ -42,7 +42,7 @@ export default function MetricRing({ value, label, size = 96, delay = 0 }: Props
   const r = (100 - stroke) / 2;
   const c = 2 * Math.PI * r;
   const dash = (c * progress) / 100;
-  const color = scoreColor(target);
+  const color = scoreColor(target, colors);
 
   return (
     <View style={styles.item}>
