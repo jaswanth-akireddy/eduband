@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "update:preview": "eas update --branch preview",
-    "update:prod": "eas update --branch production"
+    "update:prod": "eas update --branch production",
+    "eval:assessment": "node tools/assessment-eval/eval.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.1",
