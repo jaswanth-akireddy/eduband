@@ -33,7 +33,7 @@ function fluencyScore(m: DeterministicMetrics, level: Level): number {
 
 function clarityScore(m: DeterministicMetrics): number {
   // Intelligibility proxy from STT confidence (Section 3).
-  // Never penalise accent — only flag genuine intelligibility issues.
+  // Never penalise accent; only flag genuine intelligibility issues.
   return Math.round(Math.min(100, Math.max(30, m.sttConfidence * 100)));
 }
 
@@ -44,24 +44,24 @@ function fluencyEvidence(m: DeterministicMetrics): string {
 function fluencyTip(m: DeterministicMetrics, level: Level): string {
   const n = getNorms(level);
   if (m.fillerRate > n.fillerRate.idealHigh) {
-    return `Reduce fillers by pausing silently instead — you used ${m.fillerCount} in ${formatDuration(
+    return `Reduce fillers by pausing silently instead. You used ${m.fillerCount} in ${formatDuration(
       m.durationSec
     )}.`;
   }
   if (m.wpm > n.wpm.idealHigh) {
-    return 'Slow down slightly so each idea lands — try a breath between sentences.';
+    return 'Slow down slightly so each idea lands. Try a breath between sentences.';
   }
   if (m.wpm < n.wpm.idealLow) {
     return 'Pick up the pace a little to keep momentum; aim for a steady, even rhythm.';
   }
-  return 'Great pacing — keep this steady rhythm and natural pausing.';
+  return 'Great pacing. Keep this steady rhythm and natural pausing.';
 }
 
 function clarityTip(m: DeterministicMetrics): string {
   if (m.sttConfidence < 0.7) {
     return 'Open your mouth a touch more and finish word endings so each word lands clearly.';
   }
-  return 'Clear and easy to follow — keep finishing your word endings crisply.';
+  return 'Clear and easy to follow. Keep finishing your word endings crisply.';
 }
 
 function formatDuration(sec: number): string {
@@ -71,11 +71,40 @@ function formatDuration(sec: number): string {
   return `${m}m ${s}s`;
 }
 
+// Below this there is too little speech to assess fairly: vocabulary range is
+// inflated on a handful of words, and pace and pauses are not measurable. A
+// 14-word, 7-second answer used to receive a normal score (CI 75).
+export const MIN_WORDS = 25;
+export const MIN_SPEAKING_SEC = 15;
+
+export class InsufficientSpeechError extends Error {
+  constructor(readonly words: number, readonly speakingSec: number) {
+    super(
+      `That was a bit short to assess (${words} words, about ${Math.round(speakingSec)} seconds of speech). ` +
+        `Try speaking for at least ${MIN_SPEAKING_SEC} seconds so we can give useful feedback.`
+    );
+    this.name = 'InsufficientSpeechError';
+  }
+}
+
+// Time from the first word to the last: the speech itself, not the silence
+// around it.
+export function speakingSeconds(t: Transcript): number {
+  if (t.words.length === 0) return 0;
+  return Math.max(0, t.words[t.words.length - 1].endSec - t.words[0].startSec);
+}
+
 export async function analyze(
   transcript: Transcript,
   durationSec: number,
   level: Level
 ): Promise<{ metrics: DeterministicMetrics; analysis: Analysis }> {
+  // 0. Refuse to score too little speech.
+  const speakingSec = speakingSeconds(transcript);
+  if (transcript.words.length < MIN_WORDS || speakingSec < MIN_SPEAKING_SEC) {
+    throw new InsufficientSpeechError(transcript.words.length, speakingSec);
+  }
+
   // 1. Deterministic metrics (code).
   const metrics = computeMetrics(transcript, durationSec);
 
@@ -117,7 +146,7 @@ export async function analyze(
       label: def.label,
       score: r ? r.score : 60,
       evidence: r ? r.evidence : 'your recorded answer',
-      tip: r ? r.tip : 'Keep practising — record again to track your growth.',
+      tip: r ? r.tip : 'Keep practising, and record again to track your growth.',
       why: r ? r.why : '',
     };
   });
@@ -147,11 +176,13 @@ export async function analyze(
   const analysis: Analysis = {
     ci,
     pillars,
-    strengths: strengths.length ? strengths : ['You showed up and recorded — that is the first win.'],
+    strengths: strengths.length ? strengths : ['You showed up and recorded. That is the first win.'],
     focusAreas,
     practiceSuggestionTaskId,
     modelVersion: llm.modelVersion,
     frameworkVersion: FRAMEWORK_VERSION,
+    scoringSource: llm.source,
+    transcriptSource: transcript.source ?? 'stt',
   };
 
   return { metrics, analysis };

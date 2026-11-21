@@ -4,8 +4,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@/navigation/types';
 import { font, makeStyles, spacing, useColors } from '@/theme';
-import { transcribe } from '@/analysis/stt';
-import { analyze } from '@/analysis/pipeline';
+import { TranscriptionError, transcribe } from '@/analysis/stt';
+import { InsufficientSpeechError, analyze } from '@/analysis/pipeline';
 import { taskById } from '@/data/tasks';
 import * as Crypto from 'expo-crypto';
 import { addSession, getProfile, getSettings } from '@/storage/store';
@@ -84,13 +84,29 @@ export default function ProcessingScreen({ route, navigation }: Props) {
       } catch (e) {
         logError('Analysis failed', e);
         if (!cancelled) {
-          // Don't fail silently — tell the user what went wrong before bouncing
-          // back, so a pipeline error is visible instead of a mystery.
+          // Nothing was saved. Say what happened in plain words and offer the
+          // obvious next step, instead of a generic error and a bounce home.
+          const title =
+            e instanceof InsufficientSpeechError
+              ? 'A little longer, please'
+              : e instanceof TranscriptionError
+                ? "We couldn't analyse this one"
+                : 'Analysis failed';
+          const message =
+            e instanceof Error ? e.message : 'Something went wrong analysing your recording.';
+          const goHome = () => navigation.replace('Tabs', { screen: 'Home' } as never);
           Alert.alert(
-            'Analysis failed',
-            e instanceof Error ? e.message : 'Something went wrong analysing your recording.'
+            title,
+            message,
+            [
+              { text: 'Home', style: 'cancel', onPress: goHome },
+              {
+                text: 'Try again',
+                onPress: () => navigation.replace('Record', { taskId: route.params.taskId }),
+              },
+            ],
+            { cancelable: true, onDismiss: goHome }
           );
-          navigation.replace('Tabs', { screen: 'Home' } as never);
         }
       }
     })();

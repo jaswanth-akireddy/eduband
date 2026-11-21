@@ -49,6 +49,18 @@ export interface WordTiming {
 export interface Transcript {
   text: string;
   words: WordTiming[];
+  // 'stt': the student's own speech. 'demo': built-in sample text, used only
+  // when no speech-to-text service is configured at all (local demo mode).
+  // Optional so sessions saved before this field existed still load.
+  source?: 'stt' | 'demo';
+}
+
+// One specific error the student made, quoted from what they actually said.
+export interface Mistake {
+  quote: string; // verbatim from the transcript (verified before display)
+  type: 'grammar' | 'word choice' | 'linking' | 'filler' | 'other';
+  correction: string;
+  explanation: string;
 }
 
 export interface Analysis {
@@ -59,6 +71,14 @@ export interface Analysis {
   practiceSuggestionTaskId: string | null;
   modelVersion: string;
   frameworkVersion: string;
+  // How the judgement pillars were scored: by the AI coach, or by built-in
+  // rules when the AI was unreachable. Rules cannot assess grammar or whether
+  // the answer addressed the question, so the report says so.
+  scoringSource?: 'ai' | 'rules';
+  transcriptSource?: 'stt' | 'demo';
+  mistakes?: Mistake[];
+  // false when the AI judged that the answer did not address the task.
+  onTopic?: boolean;
 }
 
 export interface Session {
@@ -90,7 +110,7 @@ export interface StudentProfile {
   language: string;
   schoolCode: string;
   // Optional: drives the personalised avatar. Absent on profiles created before
-  // this field existed — treat as 'other' (a neutral avatar).
+  // this field existed: treat as 'other' (a neutral avatar).
   gender?: Gender;
 }
 
@@ -114,7 +134,7 @@ export interface RoleProfile {
   orgOrLink: string;
 }
 
-// Teacher "Analyse Teaching" — content/pedagogy coverage on top of delivery.
+// Teacher "Analyse Teaching": content/pedagogy coverage on top of delivery.
 export interface TeachingMaterial {
   id: string;
   name: string;

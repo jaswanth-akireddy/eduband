@@ -8,7 +8,7 @@
 import { Transcript, WordTiming } from '@/types';
 import { config, modeFlags } from '@/config';
 import { getAccessToken } from '@/services/supabase';
-import { logEvent, logInfo, logWarn } from '@/services/logger';
+import { logError, logEvent, logInfo, logWarn } from '@/services/logger';
 
 // ---------------------------------------------------------------------------
 // MOCK (offline fallback)
@@ -75,7 +75,7 @@ function fileMeta(uri: string): { name: string; type: string } {
 }
 
 // ---------------------------------------------------------------------------
-// DEEPGRAM (direct, client-side — test only)
+// DEEPGRAM (direct, client-side: test only)
 // ---------------------------------------------------------------------------
 async function deepgramTranscribe(uri: string): Promise<Transcript> {
   const audio = await uriToBlob(uri);
@@ -104,7 +104,7 @@ async function deepgramTranscribe(uri: string): Promise<Transcript> {
 }
 
 // ---------------------------------------------------------------------------
-// ASSEMBLYAI (direct, client-side — test only)
+// ASSEMBLYAI (direct, client-side: test only)
 // ---------------------------------------------------------------------------
 async function assemblyTranscribe(uri: string): Promise<Transcript> {
   const audio = await uriToBlob(uri);
@@ -144,11 +144,11 @@ async function assemblyTranscribe(uri: string): Promise<Transcript> {
 }
 
 // ---------------------------------------------------------------------------
-// BACKEND PROXY (recommended — keys live server-side)
+// BACKEND PROXY (recommended: keys live server-side)
 // ---------------------------------------------------------------------------
 async function backendTranscribe(uri: string, durationSec: number): Promise<Transcript> {
   const form = new FormData();
-  // RN reads the file straight from the uri when building the multipart body —
+  // RN reads the file straight from the uri when building the multipart body;
   // don't pre-fetch it (fetch(file://…) fails on Android). Descriptor object is
   // not in DOM typings, hence the cast.
   const { name, type } = fileMeta(uri);
@@ -157,8 +157,8 @@ async function backendTranscribe(uri: string, durationSec: number): Promise<Tran
   const token = await getAccessToken();
   if (!token) {
     // No JWT = the function will 401. Surface it clearly rather than as a
-    // mysterious auth failure — real STT requires being signed in.
-    throw new Error('Not signed in — backend STT needs a logged-in session');
+    // mysterious auth failure. Real STT requires being signed in.
+    throw new Error('Not signed in: backend STT needs a logged-in session');
   }
   const res = await fetch(`${config.apiBase}/transcribe`, {
     method: 'POST',
@@ -175,32 +175,54 @@ async function backendTranscribe(uri: string, durationSec: number): Promise<Tran
 // ---------------------------------------------------------------------------
 // PUBLIC
 // ---------------------------------------------------------------------------
+// Thrown when a speech-to-text service is configured but could not produce a
+// transcript. The caller must not score anything: there is no student speech.
+export class TranscriptionError extends Error {
+  constructor(message: string, readonly cause?: unknown) {
+    super(message);
+    this.name = 'TranscriptionError';
+  }
+}
+
 export async function transcribe(
   audioUri: string | null,
   durationSec: number
 ): Promise<Transcript> {
-  try {
-    if (audioUri && modeFlags.useBackend) {
-      logInfo('Transcribing via backend', config.apiBase);
-      const t = await backendTranscribe(audioUri, durationSec);
-      logEvent('Transcript received (backend)', { words: t.words.length });
-      return t;
-    }
-    if (audioUri && modeFlags.useDirectStt) {
+  const sttConfigured = modeFlags.useBackend || modeFlags.useDirectStt;
+
+  // A real recording with a configured service: transcribe it or fail loudly.
+  // There used to be a silent fallback to a canned sample transcript here, so
+  // a network error produced a full report built on words the student never
+  // said ("my grandmother's house"), quoted back as "From your speech".
+  if (audioUri && sttConfigured) {
+    try {
+      if (modeFlags.useBackend) {
+        logInfo('Transcribing via backend', config.apiBase);
+        const t = await backendTranscribe(audioUri, durationSec);
+        logEvent('Transcript received (backend)', { words: t.words.length });
+        return { ...t, source: 'stt' };
+      }
       logInfo(`Transcribing via ${config.sttProvider}`);
       const t =
         config.sttProvider === 'assemblyai'
           ? await assemblyTranscribe(audioUri)
           : await deepgramTranscribe(audioUri);
       logEvent(`Transcript received (${config.sttProvider})`, { words: t.words.length });
-      return t;
+      return { ...t, source: 'stt' };
+    } catch (e) {
+      logError('Speech-to-text failed; nothing will be scored', e);
+      throw new TranscriptionError(
+        "We couldn't transcribe this recording, so it wasn't scored. Check your connection and try again.",
+        e
+      );
     }
-    logInfo('No STT configured — using mock transcript');
-  } catch (e) {
-    // Fall back to mock so a transient API/network issue never blocks the user.
-    logWarn('STT failed, using mock transcript', e);
   }
+
+  // Local demo mode only: no speech-to-text service exists, or there is no
+  // recording to transcribe (the Language Lab preview). The transcript is
+  // marked 'demo' and the report says plainly that it is sample text.
+  logInfo(sttConfigured ? 'No recording to transcribe; using demo transcript' : 'No STT configured; using demo transcript');
   const t = await mockTranscribe(durationSec);
-  logEvent('Transcript ready (mock)', { words: t.words.length });
-  return t;
+  logEvent('Transcript ready (demo)', { words: t.words.length });
+  return { ...t, source: 'demo' };
 }

@@ -20,6 +20,8 @@ export interface LlmPillarResult {
 export interface LlmScoringResult {
   pillars: LlmPillarResult[];
   modelVersion: string;
+  // 'rules' when the AI was unreachable and built-in rules scored instead.
+  source: 'ai' | 'rules';
 }
 
 export const CLAUDE_SYSTEM_PROMPT = `You are an expert, kind speech communication coach for students.
@@ -55,7 +57,8 @@ function mockScore(transcript: Transcript, metrics: DeterministicMetrics): LlmSc
   const confidence = clamp(70 - metrics.fillerRate * 200 + (metrics.wpm > 110 ? 6 : -4), 30, 95);
   const snippet = pickSnippet(transcript, 'your recorded answer');
   return {
-    modelVersion: 'mock-1.0.0',
+    modelVersion: 'rules-1.0.0',
+    source: 'rules',
     pillars: [
       { id: 'language', score: Math.round(language), evidence: snippet,
         tip: language < 65 ? 'Swap one common word for a more precise one each session.' : 'Keep stretching vocabulary; one vivid word per key idea.',
@@ -116,7 +119,7 @@ async function callClaude(
   if (!res.ok) throw new Error(`Anthropic error ${res.status}`);
   const data = await res.json();
   const text = data?.content?.[0]?.text ?? '';
-  return { pillars: parsePillars(text), modelVersion: config.anthropicModel };
+  return { pillars: parsePillars(text), modelVersion: config.anthropicModel, source: 'ai' };
 }
 
 // ---------------------------------------------------------------------------
@@ -152,7 +155,7 @@ ${JSON.stringify({ transcript: transcript.text, metrics, level })}`;
   if (!res.ok) throw new Error(`Gemini error ${res.status}`);
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  return { pillars: parsePillars(text), modelVersion: config.geminiModel };
+  return { pillars: parsePillars(text), modelVersion: config.geminiModel, source: 'ai' };
 }
 
 // ---------------------------------------------------------------------------
@@ -176,7 +179,8 @@ async function callBackend(
     const body = await res.text().catch(() => '');
     throw new Error(`Backend scoring error ${res.status}${body ? `: ${body.slice(0, 300)}` : ''}`);
   }
-  return (await res.json()) as LlmScoringResult;
+  const data = (await res.json()) as Omit<LlmScoringResult, 'source'>;
+  return { ...data, source: 'ai' };
 }
 
 // ---------------------------------------------------------------------------

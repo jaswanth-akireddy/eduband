@@ -16,8 +16,9 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT } = require('./register.cjs');
-const { analyze } = require(path.join(ROOT, 'src/analysis/pipeline.ts'));
-const { transcribe } = require(path.join(ROOT, 'src/analysis/stt.ts'));
+const { analyze, InsufficientSpeechError } = require(path.join(ROOT, 'src/analysis/pipeline.ts'));
+const { transcribe, TranscriptionError } = require(path.join(ROOT, 'src/analysis/stt.ts'));
+const { config } = require('./stubs/config.cjs');
 const speak = require('./speak.cjs');
 const cases = require('./cases.cjs');
 
@@ -28,10 +29,17 @@ async function run(id) {
   // The app logs through console; keep the scorecard readable.
   console.log = () => {};
   try {
-    const { metrics, analysis } = await analyze(transcript, durationSec, 'high');
+    const { metrics, analysis } = await analyze(transcript, durationSec, 'high', c[5]);
     const s = Object.fromEntries(analysis.pillars.map((p) => [p.id, p.score]));
     const ev = Object.fromEntries(analysis.pillars.map((p) => [p.id, p.evidence]));
     return { m: metrics, a: analysis, s, ev };
+  } catch (e) {
+    // The app refused to score: record that, so checks can tell a refusal
+    // from a score.
+    if (InsufficientSpeechError && e instanceof InsufficientSpeechError) {
+      return { refused: e.message, m: { wordCount: transcript.words.length }, a: { ci: null, focusAreas: [] }, s: {}, ev: {} };
+    }
+    throw e;
   } finally {
     console.log = quiet;
   }
@@ -43,7 +51,14 @@ async function run(id) {
   const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
   console.log = () => {};
-  const fallback = await transcribe('file:///student-recording.m4a', 45);
+  // (a) A service is configured but unreachable: must refuse, not fake.
+  config.apiBase = 'http://127.0.0.1:9';
+  let failed = null;
+  try { const t = await transcribe('file:///student-recording.m4a', 45); failed = { scoredText: t.text }; }
+  catch (e) { failed = { threw: e && e.name }; }
+  config.apiBase = '';
+  // (b) Nothing configured (local demo): sample text is allowed, but labelled.
+  const demo = await transcribe('file:///student-recording.m4a', 45);
   console.log = quiet;
 
   const checks = [
@@ -68,18 +83,18 @@ async function run(id) {
     ['Off-topic is penalised', 'OFF_TOPIC CI at least 15 below STRONG',
       R.STRONG.a.ci - R.OFF_TOPIC.a.ci >= 15,
       `CI ${R.OFF_TOPIC.a.ci} vs ${R.STRONG.a.ci}`],
-    ['Too-short answers are flagged', 'A 7-second answer is not given a normal score',
-      R.SHORT.a.ci === 0 || /insufficient|too short/i.test(JSON.stringify(R.SHORT.a)),
-      `SHORT got CI ${R.SHORT.a.ci} from ${R.SHORT.m.wordCount} words`],
+    ['Too-short answers are flagged', 'A 7-second answer is not scored, but a weak full answer still is',
+      !!R.SHORT.refused && !R.WEAK.refused,
+      R.SHORT.refused ? `SHORT refused (${R.SHORT.m.wordCount} words); WEAK ${R.WEAK.refused ? 'ALSO refused' : 'scored, CI ' + R.WEAK.a.ci}` : `SHORT got CI ${R.SHORT.a.ci} from ${R.SHORT.m.wordCount} words`],
     ['Real hesitations reach the scorer', 'Deepgram request keeps um/uh (filler_words=true)',
       /filler_words=true/.test(src('backend/supabase/functions/transcribe/index.ts')),
       'checked the server Deepgram request'],
     ['Evidence is pillar-specific', 'Language, Structure, Confidence do not all quote the same line',
       new Set([R.GRAMMAR.ev.language, R.GRAMMAR.ev.structure, R.GRAMMAR.ev.confidence]).size > 1,
       `GRAMMAR quotes "${String(R.GRAMMAR.ev.language).slice(0, 40)}..." for all three`],
-    ['No report from a fake transcript', 'If speech-to-text fails, the student is not scored on canned text',
-      !/grandmother/i.test(fallback.text),
-      `fallback transcript: "${fallback.text.slice(0, 48)}..."`],
+    ['No report from a fake transcript', 'Configured STT failing refuses; demo-mode sample text is labelled demo',
+      failed.threw === 'TranscriptionError' && demo.source === 'demo',
+      `failing STT -> ${failed.threw ? 'refused (' + failed.threw + ')' : 'scored canned text "' + failed.scoredText.slice(0, 30) + '..."'}; demo transcript source: ${demo.source ?? 'unlabelled'}`],
     ['Scoring knows the question', 'The task prompt is sent to the LLM scorer',
       /taskPrompt|task_prompt|prompt:/.test(src('src/analysis/llmScoring.ts').split('PUBLIC')[0].match(/JSON\.stringify\(\{[^)]*\}\)/g)?.join(' ') ?? ''),
       'checked the scoring request bodies'],

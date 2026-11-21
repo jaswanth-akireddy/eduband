@@ -131,6 +131,27 @@ export default function ReportScreen({ route, navigation }: Props) {
         {formatDate(session.createdAt)} · {formatDuration(session.durationSec)}
       </Text>
 
+      {/* Honesty notices: say plainly when a report is not the full AI
+          assessment of the student's own words. */}
+      {analysis.transcriptSource === 'demo' && (
+        <View style={styles.notice} accessibilityRole="text">
+          <Icon name="info" size={18} color={colors.textMuted} />
+          <Text style={styles.noticeText}>
+            <Text style={styles.noticeLead}>Demo transcript. </Text>
+            This report uses built-in sample text, not your recording, because speech-to-text isn't set up.
+          </Text>
+        </View>
+      )}
+      {analysis.transcriptSource !== 'demo' && analysis.scoringSource === 'rules' && (
+        <View style={styles.notice} accessibilityRole="text">
+          <Icon name="info" size={18} color={colors.textMuted} />
+          <Text style={styles.noticeText}>
+            <Text style={styles.noticeLead}>Quick estimate. </Text>
+            The AI coach was unavailable, so Language, Structure and Confidence were scored by simple rules. They can't check grammar or whether you answered the question.
+          </Text>
+        </View>
+      )}
+
       {/* Communication Index */}
       <FadeIn>
       <Card style={{ alignItems: 'center', paddingVertical: spacing.lg }}>
@@ -394,6 +415,17 @@ const useStyles = makeStyles((colors) => ({
   // Score sits under the title rather than beside it: side by side, long
   // pillar names pushed "Developing · 66" onto two lines, splitting the label
   // from its number.
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  noticeText: { flex: 1, color: colors.text, fontSize: font.small, lineHeight: 19 },
+  noticeLead: { fontWeight: '600' },
   focusHeader: { marginBottom: spacing.sm },
   focusTitle: { fontSize: font.h3, fontWeight: '600', color: colors.text, letterSpacing: -0.1 },
   focusBand: { fontSize: font.small, fontWeight: '600', marginTop: 2 },

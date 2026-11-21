@@ -25,7 +25,8 @@ export type IconName =
   | 'clock'
   | 'trash'
   | 'bulb'
-  | 'quote';
+  | 'quote'
+  | 'info';
 
 interface Props {
   name: IconName;
@@ -177,6 +178,12 @@ export default function Icon({ name, size = 22, color = '#1B1B1F', strokeWidth =
         <>
           <Path d="M5 7h4v4c0 3-1.2 5-4 6" {...p} />
           <Path d="M14 7h4v4c0 3-1.2 5-4 6" {...p} />
+        </>
+      )}
+      {name === 'info' && (
+        <>
+          <Circle cx={12} cy={12} r={8.5} {...p} />
+          <Path d="M12 11v5M12 8h.01" {...p} />
         </>
       )}
       {name === 'trash' && (
